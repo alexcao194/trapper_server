@@ -1,5 +1,4 @@
 const { client, connectDb } = require("../config/mongo.config")
-const uuidv1 = require("uuid/v1")
 const mockDB = require("./data.mock")
 
 async function dataLoad() {

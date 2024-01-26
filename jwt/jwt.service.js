@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const uuidv1 = require("uuid/v1");
+const { v4: uuidv4 } = require("uuid");
 const mockDB = require("../data/data.mock");
 const { connectDb, close } = require("../config/mongo.config");
 
@@ -30,7 +30,7 @@ const jwtService = {
     });
 
     let result = await collection.insertOne(
-      { id: uuidv1(), userId: payload.id, refreshToken },
+      { id: uuidv4(), userId: payload.id, refreshToken },
       (err, result) => {
         if (err) {
           throw err;
