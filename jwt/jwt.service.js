@@ -22,7 +22,7 @@ const jwtService = {
     // which have already been generated. In this case we should
     // remove all this refresh tokens and leave only new one for security reason
     if (userRefreshTokens.length >= 5) {
-      await collection.remove({ userId: payload.id });
+      await collection.drop({ userId: payload.id });
     }
 
     const refreshToken = jwt.sign({ user: payload }, jwtSecretString, {
