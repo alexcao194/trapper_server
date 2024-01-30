@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
-const mockDB = require("../data/data.mock");
 const { connectDb, close } = require("../config/mongo.config");
 
-const jwtSecretString = "mysecret";
+const jwtSecretString = "mysecret"; // TODO: move to .env
 
 const jwtService = {
   getAccessToken: payload => {
@@ -47,7 +46,7 @@ const jwtService = {
       }
 
       const decodedToken = jwt.verify(token, jwtSecretString)
-      return decodedToken.user;
+      return decodedToken.user;  
   },
 
   refreshToken: async token => {
