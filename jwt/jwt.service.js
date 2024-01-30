@@ -37,6 +37,8 @@ const jwtService = {
       }
     );
 
+    close();
+
     return refreshToken;
   },
 
@@ -86,6 +88,8 @@ const jwtService = {
     const newRefreshToken = await getUpdatedRefreshToken(token, payload);
     const newAccessToken = getAccessToken(payload);
 
+    close();
+
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 };
@@ -98,8 +102,9 @@ const getUpdatedRefreshToken = async (oldRefreshToken, payload) => {
   const newRefreshToken = jwt.sign({ user: payload }, jwtSecretString, {
     expiresIn: "30d"
   });
+
   // replace current refresh token with new one
-  mockDB.tokens = await collection.find().map(token => {
+  await collection.find().map(token => {
     if (token.refreshToken === oldRefreshToken) {
       return { ...token, refreshToken: newRefreshToken };
     }
@@ -107,6 +112,7 @@ const getUpdatedRefreshToken = async (oldRefreshToken, payload) => {
     return token;
   });
 
+  close();
   return newRefreshToken;
 };
 
