@@ -9,10 +9,11 @@ const jwtMiddleware = {
     if (!token) {
       return res.status(401).send("Token is invalid");
     }
-
+    
     const user = jwtService.verifyJWTToken(token);
 
     req.user = user;
+
     next();
   }
 };
