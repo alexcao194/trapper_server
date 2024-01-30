@@ -9,33 +9,28 @@ const authController = {
 
     const loginData = req.body;
 
-    if (!loginData || !loginData.username || !loginData.username) {
+    if (!loginData || !loginData.email || !loginData.password) {
       return res.status(400).send("Please enter valid data!");
     }
 
     const user = await usersCollection.findOne(
-      { username: loginData.username }
+      { email: loginData.email }
     );
 
     if (!user) {
-      return res.status(400).send("Username or password is wrong!");
+      return res.status(400).send("Email or password is wrong!");
     }
 
     if (user && user.password !== loginData.password) {
-      return res.status(400).send("Username or password is wrong!");
+      return res.status(400).send("Email or password is wrong!");
     }
 
-    const payload = { id: user.id, email: user.email, username: user.username };
+    const payload = { id: user.id, email: user.email};
 
     const accessToken = jwtService.getAccessToken(payload);
     const refreshToken = await jwtService.getRefreshToken(payload);
     
-    res.send({ user, accessToken, refreshToken });
-  },
-
-  getCurrentUser: (req, res) => {
-    const currentUser = mockDB.users.find(user => user.id === req.user.id);
-    res.send(currentUser);
+    res.send({ accessToken, refreshToken });
   },
 
   refreshToken: async (req, res) => {
