@@ -28,7 +28,7 @@ const authController = {
       return res.status(400).send("Email or password is wrong!");
     }
 
-    const payload = { id: user.id, email: user.email };
+    const payload = { userId: user.userId };
 
     const accessToken = jwtService.getAccessToken(payload);
     const refreshToken = await jwtService.getRefreshToken(payload);
@@ -60,8 +60,11 @@ const authController = {
       return res.status(400).send("User already exists!");
     }
 
+    const userId = uuidv4();
+
     await usersCollection.insertOne(
       {
+        userId: userId,
         email: registryData.email,
         password: registryData.password,
       }
@@ -69,7 +72,7 @@ const authController = {
 
     // TODO: add profile
 
-    const payload = { email: registryData.email };
+    const payload = { userId: userId };
 
     const accessToken = jwtService.getAccessToken(payload);
     const refreshToken = await jwtService.getRefreshToken(payload);
@@ -98,7 +101,7 @@ const authController = {
     const profilesCollection = db.collection('profiles');
 
     const profile = await profilesCollection.findOne(
-      { email: req.user.email }
+      { userId: req.user.userId }
     );
 
     if (!profile) {
@@ -106,6 +109,10 @@ const authController = {
     }
 
     res.send(profile);
+  },
+
+  updateProfile: async (req, res) => {
+    
   }
 };
 
