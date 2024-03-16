@@ -56,8 +56,8 @@ const authController = {
       return res.status(400).send("Please enter valid password!");
     }
 
-    if (await isUserExists(registryData.email)) {
-      return res.status(400).send("User already exists!");
+    if (await isEmailExists(registryData.email)) {
+      return res.status(400).send("Email already exists!");
     }
 
     const userId = uuidv4();
@@ -100,7 +100,7 @@ const authController = {
     const { db, client } = await connectDb();
     const profilesCollection = db.collection('profiles');
 
-    const profile = await profilesCollection.findOne(
+    let profile = await profilesCollection.findOne(
       { userId: req.user.userId }
     );
 
@@ -108,11 +108,44 @@ const authController = {
       return res.status(404).send("Profile not found!");
     }
 
+    delete profile.userId;
+
     res.send(profile);
   },
 
   updateProfile: async (req, res) => {
-    
+    const { db, client } = await connectDb();
+    const profilesCollection = db.collection('profiles');
+
+    const newProfileData = req.body;
+
+    if (!newProfileData) {
+      return res.status(400).send("Please enter valid data!");
+    }
+
+    if (newProfileData.email) {
+      if (!validateEmail(newProfileData.email)) {
+        return res.status(400).send("Please enter valid email!");
+      }
+
+      if (await isEmailExists(newProfileData.email)) {
+        return res.status(400).send("Email already exists!");
+      }
+    }
+
+    if (newProfileData.password) {
+      if (!validatePassword(newProfileData.password)) {
+        return res.status(400).send("Please enter valid password!");
+      }
+    }
+
+    if (newProfileData.full_name) {
+      if (!validateFullName(newProfileData.full_name)) {
+        return res.status(400).send("Please enter valid name!");
+      }
+    }
+
+
   }
 };
 
@@ -132,7 +165,27 @@ const validatePassword = (password) => {
   return validator.isStrongPassword(password);
 }
 
-const isUserExists = async (email) => {
+const validateFullName = (name) => {
+  if (name.trim().length === 0) {
+    return false;
+  }
+
+  name = name.replace(/\s+/g, ' ');
+
+  let nameParts = name.split(' ');
+
+  for (let i = 0; i < nameParts.length; i++) {
+    if (!validator.isAlpha(nameParts[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+
+const isEmailExists = async (email) => {
 
   const { db, client } = await connectDb();
   const usersCollection = db.collection('users');
