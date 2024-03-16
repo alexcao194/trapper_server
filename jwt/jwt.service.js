@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
-const { connectDb, close } = require("../config/mongo.config");
+const { connectDb } = require("../config/mongo.config");
 
 const jwtSecretString = "mysecret"; // TODO: move to .env
 
@@ -36,8 +36,6 @@ const jwtService = {
         }
       }
     );
-
-    close();
 
     return refreshToken;
   },
@@ -88,8 +86,6 @@ const jwtService = {
     const newRefreshToken = await getUpdatedRefreshToken(token, payload);
     const newAccessToken = getAccessToken(payload);
 
-    close();
-
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 };
@@ -112,7 +108,6 @@ const getUpdatedRefreshToken = async (oldRefreshToken, payload) => {
     return token;
   });
 
-  close();
   return newRefreshToken;
 };
 

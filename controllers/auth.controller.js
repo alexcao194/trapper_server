@@ -1,5 +1,5 @@
 const jwtService = require("../jwt/jwt.service");
-const { close, connectDb } = require('../config/mongo.config');
+const { connectDb } = require('../config/mongo.config');
 const { v4: uuidv4 } = require("uuid");
 const { Timestamp } = require("mongodb");
 const validator = require('validator');
@@ -19,8 +19,6 @@ const authController = {
     const user = await usersCollection.findOne(
       { email: loginData.email }
     );
-
-    close();
 
     if (!user) {
       return res.status(400).send("Email or password is wrong!");
@@ -74,8 +72,6 @@ const authController = {
 
     // TODO: add profile
 
-    close();
-
     const payload = { id: userId, email: registryData.email };
 
     const accessToken = jwtService.getAccessToken(payload);
@@ -125,8 +121,6 @@ const isUserExists = async (email) => {
   const user = await usersCollection.findOne(
     { email: email }
   );
-
-  close();
 
   if (user) {
     return true;
