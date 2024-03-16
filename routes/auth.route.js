@@ -11,4 +11,6 @@ authRouter.post("/refresh-token", authController.refreshToken);
 
 authRouter.get("/profile", jwtMiddleware.validateToken, authController.getProfile);
 
+authRouter.put("/profile", jwtMiddleware.validateToken, authController.updateProfile);
+
 module.exports = authRouter;

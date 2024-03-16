@@ -106,6 +106,12 @@ const authController = {
     }
 
     res.send(profile);
+  },
+
+  updateProfile: async (req, res) => {
+    const { db, client } = await connectDb();
+    const profilesCollection = db.collection('profiles');
+    
   }
 };
 
