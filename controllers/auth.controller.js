@@ -7,7 +7,7 @@ const validator = require('validator');
 const authController = {
   login: async (req, res, next) => {
 
-    const {db, client} = await connectDb();  
+    const { db, client } = await connectDb();
     const usersCollection = db.collection('users');
 
     const loginData = req.body;
@@ -28,17 +28,17 @@ const authController = {
       return res.status(400).send("Email or password is wrong!");
     }
 
-    const payload = { id: user.id, email: user.email};
+    const payload = { id: user.id, email: user.email };
 
     const accessToken = jwtService.getAccessToken(payload);
     const refreshToken = await jwtService.getRefreshToken(payload);
-    
+
     res.send({ accessToken, refreshToken });
   },
 
   registry: async (req, res, next) => {
 
-    const {db, client} = await connectDb();  
+    const { db, client } = await connectDb();
     const usersCollection = db.collection('users');
     const profilesCollection = db.collection('profiles');
 
@@ -60,23 +60,20 @@ const authController = {
       return res.status(400).send("User already exists!");
     }
 
-    const userId = uuidv4();
-    
     await usersCollection.insertOne(
       {
-        id: userId,
-        email: registryData.email, 
+        email: registryData.email,
         password: registryData.password,
       }
     );
 
     // TODO: add profile
 
-    const payload = { id: userId, email: registryData.email };
+    const payload = { email: registryData.email };
 
     const accessToken = jwtService.getAccessToken(payload);
     const refreshToken = await jwtService.getRefreshToken(payload);
-    
+
     res.send({ accessToken, refreshToken });
   },
 
@@ -94,10 +91,25 @@ const authController = {
       const message = (err && err.message) || err;
       res.status(403).send(message);
     }
+  },
+
+  getProfile: async (req, res) => {
+    const { db, client } = await connectDb();
+    const profilesCollection = db.collection('profiles');
+
+    const profile = await profilesCollection.findOne(
+      { email: req.user.email }
+    );
+
+    if (!profile) {
+      return res.status(404).send("Profile not found!");
+    }
+
+    res.send(profile);
   }
 };
 
-const validateEmail = (email) => { 
+const validateEmail = (email) => {
   if (!email) {
     return false;
   }
@@ -105,7 +117,7 @@ const validateEmail = (email) => {
   return validator.isEmail(email);
 }
 
-const validatePassword = (password) => { 
+const validatePassword = (password) => {
   if (!password) {
     return false;
   }
@@ -113,7 +125,7 @@ const validatePassword = (password) => {
   return validator.isStrongPassword(password);
 }
 
-const isUserExists = async (email) => { 
+const isUserExists = async (email) => {
 
   const { db, client } = await connectDb();
   const usersCollection = db.collection('users');

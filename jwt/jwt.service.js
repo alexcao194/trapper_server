@@ -14,14 +14,14 @@ const jwtService = {
     const collection = db.collection("refreshTokens");
 
     const userRefreshTokens = await collection
-      .find({ userId: payload.id })
+      .find({ email: payload.email })
       .toArray();
 
     // check if there are 5 or more refresh tokens,
     // which have already been generated. In this case we should
     // remove all this refresh tokens and leave only new one for security reason
     if (userRefreshTokens.length >= 5) {
-      await collection.drop({ userId: payload.id });
+      await collection.drop({ email: payload.email });
     }
 
     const refreshToken = jwt.sign({ user: payload }, jwtSecretString, {
@@ -29,7 +29,7 @@ const jwtService = {
     });
 
     let result = await collection.insertOne(
-      { id: uuidv4(), userId: payload.id, refreshToken },
+      { id: uuidv4(), email: payload.email, refreshToken },
       (err, result) => {
         if (err) {
           throw err;
@@ -66,7 +66,7 @@ const jwtService = {
 
     // get all user's refresh tokens from DB
     const allRefreshTokens = await collection
-      .find({ userId: user.id })
+      .find({ email: user.email })
       .toArray();
 
     if (!allRefreshTokens || !allRefreshTokens.length) {

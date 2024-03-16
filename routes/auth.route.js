@@ -9,4 +9,6 @@ authRouter.post("/registry", authController.registry);
 
 authRouter.post("/refresh-token", authController.refreshToken);
 
+authRouter.get("/profile", jwtMiddleware.validateToken, authController.getProfile);
+
 module.exports = authRouter;
