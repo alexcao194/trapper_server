@@ -117,6 +117,14 @@ const authController = {
     const { db, client } = await connectDb();
     const profilesCollection = db.collection('profiles');
 
+    let profile = await profilesCollection.findOne(
+      { userId: req.user.userId }
+    );
+
+    if (!profile) {
+      return res.status(404).send("Profile not found!");
+    }
+
     const newProfileData = req.body;
 
     if (!newProfileData) {
@@ -145,7 +153,23 @@ const authController = {
       }
     }
 
+    if(newProfileData.date_of_birth) {
+      if (!validateDateOfBirth(newProfileData.date_of_birth)) {
+        return res.status(400).send("Please enter valid date of birth!");
+      }
+    }
 
+    if(newProfileData.photo_url) {
+      if (!validatePhotoUrl(newProfileData.photo_url)) {
+        return res.status(400).send("Please enter valid photo url!");
+      }
+    }
+
+    Object.keys(newProfileData).forEach(key => {
+      if (newProfileData[key]) {
+        profile[key] = newProfileData[key];
+      }
+    });
   }
 };
 
@@ -183,7 +207,21 @@ const validateFullName = (name) => {
   return true;
 }
 
+const validateDateOfBirth = (date) => {
+  if (!date) {
+    return false;
+  }
 
+  return validator.isDate(date);
+}
+
+const validatePhotoUrl = (url) => {
+  if (!url) {
+    return false;
+  }
+
+  return validator.isURL(url);
+}
 
 const isEmailExists = async (email) => {
 
