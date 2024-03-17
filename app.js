@@ -5,9 +5,15 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const { authRouter } = require("./routes/index");
 const cors = require("cors");
-
+const { connectDb } = require("./config/mongo.config");
 const app = express();
 
+// Kết nối tới CSDL ngay khi server khởi động
+connectDb().then(() => {
+  console.log("Connected to MongoDB");
+}).catch(err => {
+  console.error("Failed to connect to MongoDB", err);
+});
 
 app.use(logger("dev"));
 app.use(cors());
