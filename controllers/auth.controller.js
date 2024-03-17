@@ -118,16 +118,13 @@ const validateLoginData = async (data) => {
 }
 
 const validateRegistryData = async (data) => {
-    if (!data) {
+    if (!data || 
+        !validateUtils.validateEmail(data.email) || 
+        !validateUtils.validatePassword(data.password) || 
+        !validateUtils.validatePassword(data.confirm_password) ||
+        !validateUtils.validateFullName(data.full_name) || 
+        !validateUtils.validateDateOfBirth(data.date_of_birth)) {
         throw new Error("Please enter valid data!");
-    }
-
-    if (!validateUtils.validateEmail(data.email)) {
-        throw new Error("Please enter valid email!");
-    }
-
-    if (!validateUtils.validatePassword(data.password)) {
-        throw new Error("Please enter valid password!");
     }
 
     if(data.password !== data.confirm_password) {
