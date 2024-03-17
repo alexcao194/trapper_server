@@ -35,33 +35,33 @@ const authController = {
 
         const registryData = req.body;
 
+        const userId = uuidv4();
+
         try {
             await validateRegistryData(registryData);
+
+            // Add user account
+            await usersCollection.insertOne(
+                {
+                    userId: userId,
+                    email: registryData.email,
+                    password: registryData.password,
+                }
+            );
+
+            // Add user profile
+            await profilesCollection.insertOne(
+                {
+                    userId: userId,
+                    email: registryData.email,
+                    full_name: registryData.full_name,
+                    date_of_birth: registryData.date_of_birth,
+                    gender: registryData.gender,
+                }
+            );
         } catch (err) {
             return res.status(400).send(err.message);
         }
-        
-        const userId = uuidv4();
-
-        // Add user account
-        await usersCollection.insertOne(
-            {
-                userId: userId,
-                email: registryData.email,
-                password: registryData.password,
-            }
-        );
-
-        // Add user profile
-        await profilesCollection.insertOne(
-            {
-                userId: userId,
-                email: registryData.email,
-                full_name: registryData.full_name,
-                date_of_birth: registryData.date_of_birth,
-                gender: registryData.gender,
-            }
-        );
 
         // Get access token and refresh token
         const payload = { userId: userId };
@@ -95,8 +95,21 @@ const authController = {
 
 const validateLoginData = async (data) => {
     // Pre-validate data
-    if (!data || validateUtils.validateEmail(data.email) || validateUtils.validatePassword(data.password)) {
+    if (!data) {
         throw new Error("Please enter valid data!");
+    }
+
+    const validators = {
+        email: validateUtils.validateEmail,
+        password: validateUtils.validatePassword
+    };
+
+    for (let key in data) {
+        if (validators[key]) {
+            if (!data[key] || !validators[key](data[key])) {
+                throw new Error(`Please enter valid ${key}!`);
+            }
+        }
     }
 
     const { db, client } = await connectDb();
@@ -118,13 +131,25 @@ const validateLoginData = async (data) => {
 }
 
 const validateRegistryData = async (data) => {
-    if (!data || 
-        !validateUtils.validateEmail(data.email) || 
-        !validateUtils.validatePassword(data.password) || 
-        !validateUtils.validatePassword(data.confirm_password) ||
-        !validateUtils.validateFullName(data.full_name) || 
-        !validateUtils.validateDateOfBirth(data.date_of_birth)) {
+    // Pre-validate data
+    if (!data) {
         throw new Error("Please enter valid data!");
+    }
+
+    const validators = {
+        email: validateUtils.validateEmail,
+        password: validateUtils.validatePassword,
+        confirm_password: validateUtils.validatePassword,
+        full_name: validateUtils.validateFullName,
+        date_of_birth: validateUtils.validateDateOfBirth,
+    };
+
+    for (let key in data) {
+        if (validators[key]) {
+            if (!data[key] || !validators[key](data[key])) {
+                throw new Error(`Please enter valid ${key}!`);
+            }
+        }
     }
 
     if(data.password !== data.confirm_password) {

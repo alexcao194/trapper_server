@@ -2,14 +2,15 @@ const { connectDb } = require('../config/mongo.config');
 const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
 
-const profileController = {
+const profileController = 
+{
     getProfile: async (req, res) => {
         const { db, client } = await connectDb();
         const profilesCollection = db.collection(constants.PROFILES);
 
         const profile = await profilesCollection.findOne(
             { userId: req.user.userId },
-            { userId: 0}
+            { projection: { userId: 0 } }
         );
 
         if (!profile) {
@@ -21,12 +22,13 @@ const profileController = {
 
     updateProfile: async (req, res) => {
         const { db, client } = await connectDb();
+        const usersCollection = db.collection(constants.USERS);
         const profilesCollection = db.collection(constants.PROFILES);
 
         // Tìm profile theo userId
         let profile = await profilesCollection.findOne(
             { userId: req.user.userId },
-            { userId: 0}
+            { projection: { userId: 0 } }
         );
 
         if (!profile) {
@@ -43,21 +45,29 @@ const profileController = {
 
         try {
             await validateProfileData(newProfileData);
+
+            // Cập nhật profile
+            Object.keys(newProfileData).forEach(key => {
+                if (newProfileData[key]) {
+                    profile[key] = newProfileData[key];
+                }
+            });
+
+            await profilesCollection.updateOne(
+                { userId: req.user.userId },
+                { $set: profile }
+            );
+
+            if(profile.email) {
+                usersCollection.updateOne(
+                    { userId: req.user.userId },
+                    { $set: { email: newProfileData.email } }
+                );
+            }
+
         } catch (err) {
             return res.status(400).send(err.message);
         }
-
-        // Cập nhật profile
-        Object.keys(newProfileData).forEach(key => {
-            if (newProfileData[key]) {
-                profile[key] = newProfileData[key];
-            }
-        });
-
-        await profilesCollection.updateOne(
-            { userId: req.user.userId },
-            { $set: profile }
-        );
 
         res.send(profile);
     }
@@ -72,16 +82,14 @@ const validateProfileData = async (data) => {
         photo_url: validateUtils.validateUrl
     };
 
-    for (let key in data) 
-    {
+    for (let key in data) {
         // Nếu trường dữ liệu ko null và có hàm validate tương ứng
-        if (data[key] && validators[key]) 
-        {
+        if (data[key] && validators[key]) {
             if (!validators[key](data[key])) {
                 throw new Error(`Please enter valid ${key}!`);
             }
 
-            if (key === constants.EMAIL && await isEmailExists(data.email)) {
+            if (key === constants.EMAIL && await validateUtils.isEmailExists(data.email)) {
                 throw new Error("Email already exists!");
             }
         }

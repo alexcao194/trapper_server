@@ -1,10 +1,10 @@
 const { connectDb } = require('../config/mongo.config');
 const validator = require('validator');
 const constants = require('../utils/constants');
+const moment = require('moment');
 
-
-const validateUtils = {
-
+const validateUtils = 
+{
     validateEmail: (email) => {
         if (!email) {
             return false;
@@ -27,17 +27,10 @@ const validateUtils = {
             return false;
         }
 
-        if (name.trim().length === 0) {
+        name = name.trim();
+
+        if(!name.match(constants.NAME_REGEX)) {
             return false;
-        }
-
-        name = name.replace(/\s+/g, ' ');
-        let nameParts = name.split(' ');
-
-        for (let i = 0; i < nameParts.length; i++) {
-            if (!validator.isAlpha(nameParts[i])) {
-                return false;
-            }
         }
 
         return true;
@@ -48,13 +41,14 @@ const validateUtils = {
             return false;
         }
 
-        if(!validator.isDate(date)) {
+        // Kiểm tra định dạng ngày
+        if (!moment(date, 'DD/MM/YYYY', true).isValid()) {
             return false;
         }
 
         // So sánh với thời gian hiện tại
-        const birthDate = new Date(date);
-        const currentDate = new Date();
+        const birthDate = moment(date, 'DD/MM/YYYY');
+        const currentDate = moment();
 
         if (birthDate > currentDate) {
             return false;
@@ -68,22 +62,25 @@ const validateUtils = {
             return false;
         }
 
-        return validator.isURL(url);
+        return validator.isURL(url, {
+            // cho phép các tên miền không có top-level domain (VD: localhost)
+            require_tld: false 
+        });
     },
 
     isEmailExists: async (email) => {
 
         const { db, client } = await connectDb();
         const usersCollection = db.collection(constants.USERS);
-    
+
         const user = await usersCollection.findOne(
             { email: email }
         );
-    
+
         if (user) {
             return true;
         }
-    
+
         return false
     }
 }
