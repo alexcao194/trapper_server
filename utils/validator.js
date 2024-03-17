@@ -1,4 +1,7 @@
+const { connectDb } = require('../config/mongo.config');
 const validator = require('validator');
+const constants = require('../utils/constants');
+
 
 const validateUtils = {
 
@@ -66,6 +69,22 @@ const validateUtils = {
         }
 
         return validator.isURL(url);
+    },
+
+    isEmailExists: async (email) => {
+
+        const { db, client } = await connectDb();
+        const usersCollection = db.collection(constants.USERS);
+    
+        const user = await usersCollection.findOne(
+            { email: email }
+        );
+    
+        if (user) {
+            return true;
+        }
+    
+        return false
     }
 }
 

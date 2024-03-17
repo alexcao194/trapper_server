@@ -4,7 +4,6 @@ const constants = Object.freeze({
     USERS: 'users',
     EMAIL: 'email',
     PASSWORD: 'password',
-
 });
 
 module.exports = constants;

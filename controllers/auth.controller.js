@@ -10,8 +10,10 @@ const authController = {
     login: async (req, res) => {
         const loginData = req.body;
 
+        let user;
+
         try {
-            await validateLoginData(loginData);
+            user = await validateLoginData(loginData);
         } catch (err) {
             return res.status(400).send(err.message);
         }
@@ -38,7 +40,6 @@ const authController = {
         } catch (err) {
             return res.status(400).send(err.message);
         }
-
         
         const userId = uuidv4();
 
@@ -112,6 +113,8 @@ const validateLoginData = async (data) => {
     if (user && user.password !== data.password) {
         throw new Error("Email or password is wrong!");
     }
+
+    return user;
 }
 
 const validateRegistryData = async (data) => {
@@ -131,27 +134,10 @@ const validateRegistryData = async (data) => {
         throw new Error("Password and confirm password are not matched!");
     }
 
-    if (await isEmailExists(data.email)) {
+    if (await validateUtils.isEmailExists(data.email)) {
         throw new Error("Email already exists!");
     }
 }
-
-
-const isEmailExists = async (email) => {
-
-    const { db, client } = await connectDb();
-    const usersCollection = db.collection(constants.USERS);
-
-    const user = await usersCollection.findOne(
-        { email: email }
-    );
-
-    if (user) {
-        return true;
-    }
-
-    return false
-};
 
 
 module.exports = authController;
