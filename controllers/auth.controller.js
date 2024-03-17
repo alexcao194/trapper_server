@@ -1,150 +1,165 @@
 const jwtService = require("../jwt/jwt.service");
 const { connectDb } = require('../config/mongo.config');
 const { v4: uuidv4 } = require("uuid");
-const { Timestamp } = require("mongodb");
-const validator = require('validator');
+const validateUtils = require('../utils/validator');
+const constants = require('../utils/constants');
+const profileController = require('./auth.profile');
+
 
 const authController = {
-  login: async (req, res, next) => {
+    login: async (req, res) => {
+        const loginData = req.body;
 
-    const { db, client } = await connectDb();
-    const usersCollection = db.collection('users');
+        let user;
 
-    const loginData = req.body;
+        try {
+            user = await validateLoginData(loginData);
+        } catch (err) {
+            return res.status(400).send(err.message);
+        }
 
-    if (!loginData || !loginData.email || !loginData.password) {
-      return res.status(400).send("Please enter valid data!");
+        // Get access token and refresh token
+        const payload = { userId: user.userId };
+
+        const accessToken = jwtService.getAccessToken(payload);
+        const refreshToken = await jwtService.getRefreshToken(payload);
+
+        res.send({ accessToken, refreshToken });
+    },
+
+    registry: async (req, res) => {
+
+        const { db, client } = await connectDb();
+        const usersCollection = db.collection(constants.USERS);
+        const profilesCollection = db.collection(constants.PROFILES);
+
+        const registryData = req.body;
+
+        const userId = uuidv4();
+
+        try {
+            await validateRegistryData(registryData);
+
+            // Add user account
+            await usersCollection.insertOne(
+                {
+                    userId: userId,
+                    email: registryData.email,
+                    password: registryData.password,
+                }
+            );
+
+            // Add user profile
+            await profilesCollection.insertOne(
+                {
+                    userId: userId,
+                    email: registryData.email,
+                    full_name: registryData.full_name,
+                    date_of_birth: registryData.date_of_birth,
+                    gender: registryData.gender,
+                }
+            );
+        } catch (err) {
+            return res.status(400).send(err.message);
+        }
+
+        // Get access token and refresh token
+        const payload = { userId: userId };
+
+        const accessToken = jwtService.getAccessToken(payload);
+        const refreshToken = await jwtService.getRefreshToken(payload);
+
+        res.send({ accessToken, refreshToken });
+    },
+
+    refreshToken: async (req, res) => {
+        const refreshToken = req.body.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(403).send("Access is forbidden");
+        }
+
+        try {
+            const newTokens = await jwtService.refreshToken(refreshToken, res);
+            res.send(newTokens);
+        } catch (err) {
+            const message = (err && err.message) || err;
+            res.status(403).send(message);
+        }
+    },
+
+    getProfile: async (req, res) => profileController.getProfile(req, res),
+
+    updateProfile: async (req, res) => profileController.updateProfile(req, res)
+};
+
+const validateLoginData = async (data) => {
+    // Pre-validate data
+    if (!data) {
+        throw new Error("Please enter valid data!");
     }
 
+    const validators = {
+        email: validateUtils.validateEmail,
+        password: validateUtils.validatePassword
+    };
+
+    for (let key in data) {
+        if (validators[key]) {
+            if (!data[key] || !validators[key](data[key])) {
+                throw new Error(`Please enter valid ${key}!`);
+            }
+        }
+    }
+
+    const { db, client } = await connectDb();
+    const usersCollection = db.collection(constants.USERS);
+
     const user = await usersCollection.findOne(
-      { email: loginData.email }
+        { email: data.email }
     );
 
     if (!user) {
-      return res.status(400).send("Email or password is wrong!");
+        throw new Error("Email or password is wrong!");
     }
 
-    if (user && user.password !== loginData.password) {
-      return res.status(400).send("Email or password is wrong!");
+    if (user && user.password !== data.password) {
+        throw new Error("Email or password is wrong!");
     }
 
-    const payload = { id: user.id, email: user.email };
-
-    const accessToken = jwtService.getAccessToken(payload);
-    const refreshToken = await jwtService.getRefreshToken(payload);
-
-    res.send({ accessToken, refreshToken });
-  },
-
-  registry: async (req, res, next) => {
-
-    const { db, client } = await connectDb();
-    const usersCollection = db.collection('users');
-    const profilesCollection = db.collection('profiles');
-
-    const registryData = req.body;
-
-    if (!registryData) {
-      return res.status(400).send("Please enter valid data!");
-    }
-
-    if (!validateEmail(registryData.email)) {
-      return res.status(400).send("Please enter valid email!");
-    }
-
-    if (!validatePassword(registryData.password)) {
-      return res.status(400).send("Please enter valid password!");
-    }
-
-    if (await isUserExists(registryData.email)) {
-      return res.status(400).send("User already exists!");
-    }
-
-    await usersCollection.insertOne(
-      {
-        email: registryData.email,
-        password: registryData.password,
-      }
-    );
-
-    // TODO: add profile
-
-    const payload = { email: registryData.email };
-
-    const accessToken = jwtService.getAccessToken(payload);
-    const refreshToken = await jwtService.getRefreshToken(payload);
-
-    res.send({ accessToken, refreshToken });
-  },
-
-  refreshToken: async (req, res) => {
-    const refreshToken = req.body.refreshToken;
-
-    if (!refreshToken) {
-      return res.status(403).send("Access is forbidden");
-    }
-
-    try {
-      const newTokens = await jwtService.refreshToken(refreshToken, res);
-      res.send(newTokens);
-    } catch (err) {
-      const message = (err && err.message) || err;
-      res.status(403).send(message);
-    }
-  },
-
-  getProfile: async (req, res) => {
-    const { db, client } = await connectDb();
-    const profilesCollection = db.collection('profiles');
-
-    const profile = await profilesCollection.findOne(
-      { email: req.user.email }
-    );
-
-    if (!profile) {
-      return res.status(404).send("Profile not found!");
-    }
-
-    res.send(profile);
-  },
-
-  updateProfile: async (req, res) => {
-    const { db, client } = await connectDb();
-    const profilesCollection = db.collection('profiles');
-    
-  }
-};
-
-const validateEmail = (email) => {
-  if (!email) {
-    return false;
-  }
-
-  return validator.isEmail(email);
+    return user;
 }
 
-const validatePassword = (password) => {
-  if (!password) {
-    return false;
-  }
+const validateRegistryData = async (data) => {
+    // Pre-validate data
+    if (!data) {
+        throw new Error("Please enter valid data!");
+    }
 
-  return validator.isStrongPassword(password);
+    const validators = {
+        email: validateUtils.validateEmail,
+        password: validateUtils.validatePassword,
+        confirm_password: validateUtils.validatePassword,
+        full_name: validateUtils.validateFullName,
+        date_of_birth: validateUtils.validateDateOfBirth,
+    };
+
+    for (let key in data) {
+        if (validators[key]) {
+            if (!data[key] || !validators[key](data[key])) {
+                throw new Error(`Please enter valid ${key}!`);
+            }
+        }
+    }
+
+    if(data.password !== data.confirm_password) {
+        throw new Error("Password and confirm password are not matched!");
+    }
+
+    if (await validateUtils.isEmailExists(data.email)) {
+        throw new Error("Email already exists!");
+    }
 }
 
-const isUserExists = async (email) => {
-
-  const { db, client } = await connectDb();
-  const usersCollection = db.collection('users');
-
-  const user = await usersCollection.findOne(
-    { email: email }
-  );
-
-  if (user) {
-    return true;
-  }
-
-  return false
-}
 
 module.exports = authController;

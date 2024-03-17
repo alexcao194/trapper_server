@@ -1,118 +1,121 @@
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const { connectDb } = require("../config/mongo.config");
+const constants = require("../utils/constants");
 
 const jwtSecretString = "mysecret"; // TODO: move to .env
+const REFRESH_TOKENS = "refreshTokens";
+const START_HEADER_AUTH = "Bearer ";
 
-const jwtService = {
-  getAccessToken: payload => {
-    return jwt.sign({ user: payload }, jwtSecretString, { expiresIn: "15min" });
-  },
+const jwtService =
+{
+    getAccessToken: payload => {
+        return jwt.sign({ user: payload }, jwtSecretString, { expiresIn: "15min" });
+    },
 
-  getRefreshToken: async payload => {
-    const { db, client } = await connectDb();
-    const collection = db.collection("refreshTokens");
+    getRefreshToken: async (payload) => {
+        const { db, client } = await connectDb();
+        const collection = db.collection(REFRESH_TOKENS);
 
-    const userRefreshTokens = await collection
-      .find({ email: payload.email })
-      .toArray();
+        const userRefreshTokens = await collection
+            .find({ userId: payload.userId })
+            .toArray();
 
-    // check if there are 5 or more refresh tokens,
-    // which have already been generated. In this case we should
-    // remove all this refresh tokens and leave only new one for security reason
-    if (userRefreshTokens.length >= 5) {
-      await collection.drop({ email: payload.email });
-    }
-
-    const refreshToken = jwt.sign({ user: payload }, jwtSecretString, {
-      expiresIn: "30d"
-    });
-
-    let result = await collection.insertOne(
-      { id: uuidv4(), email: payload.email, refreshToken },
-      (err, result) => {
-        if (err) {
-          throw err;
+        // Nếu có >= 5 refresh token thì
+        // xóa tất cả refresh token của user đó và chỉ giữ lại cái mới để bảo mật
+        if (userRefreshTokens.length >= 5) {
+            await collection.drop({ userId: payload.userId });
         }
-      }
-    );
 
-    return refreshToken;
-  },
+        const refreshToken = jwt.sign({ user: payload }, jwtSecretString, {
+            expiresIn: "30d"
+        });
 
-  verifyJWTToken: (token) => {
-      if (token.startsWith("Bearer ")) {
-        token = token.slice(7, token.length);
-      }
+        let result = await collection.insertOne(
+            { id: uuidv4(), userId: payload.userId, refreshToken },
+            (err, result) => {
+                if (err) {
+                    throw err;
+                }
+            }
+        );
 
-      const decodedToken = jwt.verify(token, jwtSecretString)
-      return decodedToken.user;  
-  },
+        return refreshToken;
+    },
 
-  refreshToken: async token => {
-    const { db, client } = await connectDb();
+    verifyJWTToken: (token) => {
+        if (token.startsWith(START_HEADER_AUTH)) {
+            token = token.slice(7, token.length);
+        }
 
-    const usersCollection = db.collection("users");
-    const collection = db.collection("refreshTokens");
+        const decodedToken = jwt.verify(token, jwtSecretString)
+        return decodedToken.user;
+    },
 
-    const decodedToken = jwt.verify(token, jwtSecretString);
+    refreshToken: async token => {
+        const { db, client } = await connectDb();
 
-    const user = await usersCollection.findOne({ id: decodedToken.user.id });
-    // var userDocument = user.hasNext() ? user.next() : null
+        const usersCollection = db.collection(constants.USERS);
+        const collection = db.collection(REFRESH_TOKENS);
 
-    if (!user) {
-      throw new Error(`Access is forbidden`);
+        const decodedToken = jwt.verify(token, jwtSecretString);
+
+        const user = await usersCollection.findOne({ userId: decodedToken.user.userId });
+        // var userDocument = user.hasNext() ? user.next() : null
+
+        if (!user) {
+            throw new Error(`Access is forbidden`);
+        }
+
+        // get all user's refresh tokens from DB
+        const allRefreshTokens = await collection
+            .find({ userId: user.userId })
+            .toArray();
+
+        if (!allRefreshTokens || !allRefreshTokens.length) {
+            throw new Error(`There is no refresh token for the user with`);
+        }
+
+        const currentRefreshToken = allRefreshTokens.find(
+            refreshToken => refreshToken.refreshToken === token
+        );
+
+        if (!currentRefreshToken) {
+            throw new Error(`Refresh token is wrong`);
+        }
+        // user's data for new tokens
+        const payload = { userId: user.userId };
+        // get new refresh and access token
+        const newRefreshToken = await getUpdatedRefreshToken(token, payload);
+        const newAccessToken = getAccessToken(payload);
+
+        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     }
-
-    // get all user's refresh tokens from DB
-    const allRefreshTokens = await collection
-      .find({ email: user.email })
-      .toArray();
-
-    if (!allRefreshTokens || !allRefreshTokens.length) {
-      throw new Error(`There is no refresh token for the user with`);
-    }
-
-    const currentRefreshToken = allRefreshTokens.find(
-      refreshToken => refreshToken.refreshToken === token
-    );
-
-    if (!currentRefreshToken) {
-      throw new Error(`Refresh token is wrong`);
-    }
-    // user's data for new tokens
-    const payload = { id: user.id, email: user.email, username: user.username };
-    // get new refresh and access token
-    const newRefreshToken = await getUpdatedRefreshToken(token, payload);
-    const newAccessToken = getAccessToken(payload);
-
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
-  }
 };
 
 const getUpdatedRefreshToken = async (oldRefreshToken, payload) => {
-  const { db, client } = await connectDb();
-  const usersCollection = db.collection("users");
-  const collection = db.collection("refreshTokens");
-  // create new refresh token
-  const newRefreshToken = jwt.sign({ user: payload }, jwtSecretString, {
-    expiresIn: "30d"
-  });
+    const { db, client } = await connectDb();
+    const usersCollection = db.collection(constants.USERS);
+    const collection = db.collection(REFRESH_TOKENS);
+    // create new refresh token
+    const newRefreshToken = jwt.sign({ user: payload }, jwtSecretString, {
+        expiresIn: "30d"
+    });
 
-  // replace current refresh token with new one
-  await collection.find().map(token => {
-    if (token.refreshToken === oldRefreshToken) {
-      return { ...token, refreshToken: newRefreshToken };
-    }
+    // replace current refresh token with new one
+    await collection.find().map(token => {
+        if (token.refreshToken === oldRefreshToken) {
+            return { ...token, refreshToken: newRefreshToken };
+        }
 
-    return token;
-  });
+        return token;
+    });
 
-  return newRefreshToken;
+    return newRefreshToken;
 };
 
 const getAccessToken = payload => {
-  return jwt.sign({ user: payload }, jwtSecretString, { expiresIn: "15min" });
+    return jwt.sign({ user: payload }, jwtSecretString, { expiresIn: "15min" });
 };
 
 module.exports = jwtService;
