@@ -1,21 +1,28 @@
 const jwtService = require("../jwt/jwt.service");
 
-const jwtMiddleware = {
-  validateToken: (req, res, next) => {
-    // get token from headers object
-    let token = req.headers["x-auth-token"] || req.headers["authorization"];
+const jwtMiddleware =
+{
+    validateToken: (req, res, next) => {
+        // Lấy token từ header
+        let token = req.headers["x-auth-token"] || req.headers["authorization"];
 
-    // check token
-    if (!token) {
-      return res.status(401).send("Token is invalid");
+        // Check null or undefined
+        if (!token) {
+            return res.status(401).send("Token is invalid");
+        }
+
+        let user;
+
+        try {
+            user = jwtService.verifyJWTToken(token);
+        } catch (error) {
+            return res.status(401).send(error.message);
+        }
+
+        req.user = user;
+
+        next();
     }
-    
-    const user = jwtService.verifyJWTToken(token);
-
-    req.user = user;
-
-    next();
-  }
 };
 
 module.exports = jwtMiddleware;
