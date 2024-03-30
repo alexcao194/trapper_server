@@ -72,15 +72,15 @@ const authController = {
     },
 
     refreshToken: async (req, res) => {
-        const refreshToken = req.body.refreshToken;
+        const refreshToken = req.body.refresh_token;
 
         if (!refreshToken) {
             return res.status(403).send("Access is forbidden");
         }
 
         try {
-            const newTokens = await jwtService.refreshToken(refreshToken, res);
-            res.send(newTokens);
+            const access_token = await jwtService.refreshToken(refreshToken, res);
+            res.send(access_token);
         } catch (err) {
             const message = (err && err.message) || err;
             res.status(403).send(message);
