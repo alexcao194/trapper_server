@@ -86,6 +86,10 @@ const authController = {
             res.status(403).send(message);
         }
     },
+
+    validate: async (req, res) => {
+        res.send(req.user);
+    }
 };
 
 const validateLoginData = async (data) => {
