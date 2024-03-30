@@ -7,7 +7,7 @@ authRouter.post("/login", authController.login);
 
 authRouter.post("/registry", authController.registry);
 
-authRouter.post("/refresh_token", authController.refreshToken);
+authRouter.get("/refresh_token", authController.refreshToken);
 
 authRouter.get("/validate", jwtMiddleware.validateToken, authController.validate);
 
