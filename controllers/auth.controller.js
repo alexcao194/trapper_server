@@ -72,7 +72,7 @@ const authController = {
     },
 
     refreshToken: async (req, res) => {
-        const refreshToken = req.body.refresh_token;
+        const refreshToken = req.headers["refresh_token"];
 
         if (!refreshToken) {
             return res.status(403).send("Access is forbidden");
