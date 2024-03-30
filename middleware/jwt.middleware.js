@@ -4,7 +4,7 @@ const jwtMiddleware =
 {
     validateToken: (req, res, next) => {
         // Lấy token từ header
-        let token = req.headers["x-auth-token"] || req.headers["authorization"];
+        let token = req.headers["access_token"] || req.headers["authorization"];
 
         // Check null or undefined
         if (!token) {
