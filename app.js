@@ -3,7 +3,7 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-const { authRouter } = require("./routes/index");
+const { router } = require("./routes/index");
 const cors = require("cors");
 const { connectDb } = require("./config/mongo.config");
 const app = express();
@@ -22,8 +22,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/auth", authRouter);
-app.use("/profile", profileRouter);
+app.use("/auth", router.authRouter);
+app.use("/profile", router.profileRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
