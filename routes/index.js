@@ -5,3 +5,7 @@ const router = {
   authRouter,
   profileRouter
 };
+
+module.exports = {
+  router
+};
