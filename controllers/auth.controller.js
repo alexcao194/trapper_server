@@ -3,7 +3,6 @@ const { connectDb } = require('../config/mongo.config');
 const { v4: uuidv4 } = require("uuid");
 const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
-const profileController = require('./auth.profile');
 
 
 const authController = {
@@ -21,10 +20,10 @@ const authController = {
         // Get access token and refresh token
         const payload = { userId: user.userId };
 
-        const accessToken = jwtService.getAccessToken(payload);
-        const refreshToken = await jwtService.getRefreshToken(payload);
+        const access_token = jwtService.getAccessToken(payload);
+        const refresh_token = await jwtService.getRefreshToken(payload);
 
-        res.send({ accessToken, refreshToken });
+        res.send({ access_token, refresh_token });
     },
 
     registry: async (req, res) => {
@@ -66,10 +65,10 @@ const authController = {
         // Get access token and refresh token
         const payload = { userId: userId };
 
-        const accessToken = jwtService.getAccessToken(payload);
-        const refreshToken = await jwtService.getRefreshToken(payload);
+        const access_token = jwtService.getAccessToken(payload);
+        const refresh_token = await jwtService.getRefreshToken(payload);
 
-        res.send({ accessToken, refreshToken });
+        res.send({ access_token, refresh_token });
     },
 
     refreshToken: async (req, res) => {
@@ -87,10 +86,6 @@ const authController = {
             res.status(403).send(message);
         }
     },
-
-    getProfile: async (req, res) => profileController.getProfile(req, res),
-
-    updateProfile: async (req, res) => profileController.updateProfile(req, res)
 };
 
 const validateLoginData = async (data) => {
