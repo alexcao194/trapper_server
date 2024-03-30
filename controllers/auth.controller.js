@@ -139,7 +139,6 @@ const validateRegistryData = async (data) => {
     const validators = {
         email: validateUtils.validateEmail,
         password: validateUtils.validatePassword,
-        confirm_password: validateUtils.validatePassword,
         full_name: validateUtils.validateFullName,
         date_of_birth: validateUtils.validateDateOfBirth,
     };
