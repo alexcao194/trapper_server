@@ -146,10 +146,6 @@ const validateRegistryData = async (data) => {
         }
     }
 
-    if(data.password !== data.confirm_password) {
-        throw new Error("Password and confirm password are not matched!");
-    }
-
     if (await validateUtils.isEmailExists(data.email)) {
         throw new Error("Email already exists!");
     }
