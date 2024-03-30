@@ -86,10 +86,10 @@ const jwtService =
         // user's data for new tokens
         const payload = { userId: user.userId };
         // get new refresh and access token
-        const newRefreshToken = await getUpdatedRefreshToken(token, payload);
-        const newAccessToken = getAccessToken(payload);
+        const access_token = await getUpdatedRefreshToken(token, payload);
+        const refresh_token = getAccessToken(payload);
 
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+        return {access_token, refresh_token};
     }
 };
 
