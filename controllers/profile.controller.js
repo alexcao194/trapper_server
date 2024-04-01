@@ -2,15 +2,10 @@ const { connectDb } = require('../config/mongo.config');
 const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
 
-const profileController = 
+const profileController =
 {
     getProfile: async (req, res) => {
-        const { db, client } = await connectDb();
-        const profilesCollection = db.collection(constants.PROFILES);
-
-        const profile = await profilesCollection.findOne(
-            { email: req.user.email },
-        );
+        const profile = await getProfileData(req.user.email);
 
         if (!profile) {
             return res.status(404).send("Profile not found!");
@@ -61,7 +56,17 @@ const profileController =
         }
 
         res.send(profile);
-    }
+    },
+
+    getHobbies: async (req, res) => {
+        const profile = await getProfileData(req.user.email);
+
+        if (!profile) {
+            return res.status(404).send("Profile not found!");
+        }
+
+        res.send(profile.hobbies);
+    },
 }
 
 const validateProfileData = async (data) => {
@@ -80,6 +85,21 @@ const validateProfileData = async (data) => {
         }
     }
 };
+
+const getProfileData = async (email) => {
+    const { db, client } = await connectDb();
+    const profilesCollection = db.collection(constants.PROFILES);
+
+    const profile = await profilesCollection.findOne(
+        { email: email },
+    );
+
+    if (!profile) {
+        return null;
+    }
+
+    return profile;
+}
 
 
 module.exports = profileController;
