@@ -18,13 +18,13 @@ const jwtService =
         const collection = db.collection(REFRESH_TOKENS);
 
         const userRefreshTokens = await collection
-            .find({ userId: payload.userId })
+            .find({ email: payload.email })
             .toArray();
 
         // Nếu có >= 5 refresh token thì
         // xóa tất cả refresh token của user đó và chỉ giữ lại cái mới để bảo mật
         if (userRefreshTokens.length >= 5) {
-            await collection.drop({ userId: payload.userId });
+            await collection.drop({ email: payload.email });
         }
 
         const refreshToken = jwt.sign({ user: payload }, jwtSecretString, {
@@ -32,7 +32,7 @@ const jwtService =
         });
 
         let result = await collection.insertOne(
-            { id: uuidv4(), userId: payload.userId, refreshToken },
+            { email: payload.email, refreshToken },
             (err, result) => {
                 if (err) {
                     throw err;
@@ -60,7 +60,7 @@ const jwtService =
 
         const decodedToken = jwt.verify(token, jwtSecretString);
 
-        const user = await usersCollection.findOne({ userId: decodedToken.user.userId });
+        const user = await usersCollection.findOne({ email: decodedToken.user.email });
         // var userDocument = user.hasNext() ? user.next() : null
 
         if (!user) {
@@ -69,7 +69,7 @@ const jwtService =
 
         // get all user's refresh tokens from DB
         const allRefreshTokens = await collection
-            .find({ userId: user.userId })
+            .find({ email: user.email })
             .toArray();
 
         if (!allRefreshTokens || !allRefreshTokens.length) {
@@ -84,7 +84,7 @@ const jwtService =
             throw new Error(`Refresh token is wrong`);
         }
         // user's data for new tokens
-        const payload = { userId: user.userId };
+        const payload = { email: user.email };
         // get new refresh and access token
         const access_token = await getUpdatedRefreshToken(token, payload);
         const refresh_token = getAccessToken(payload);

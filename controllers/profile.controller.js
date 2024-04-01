@@ -9,8 +9,7 @@ const profileController =
         const profilesCollection = db.collection(constants.PROFILES);
 
         const profile = await profilesCollection.findOne(
-            { userId: req.user.userId },
-            { projection: { userId: 0 } }
+            { email: req.user.email },
         );
 
         if (!profile) {
@@ -25,10 +24,9 @@ const profileController =
         const usersCollection = db.collection(constants.USERS);
         const profilesCollection = db.collection(constants.PROFILES);
 
-        // Tìm profile theo userId
+        // Tìm profile theo email
         let profile = await profilesCollection.findOne(
-            { userId: req.user.userId },
-            { projection: { userId: 0 } }
+            { email: req.user.email },
         );
 
         if (!profile) {
@@ -54,16 +52,9 @@ const profileController =
             });
 
             await profilesCollection.updateOne(
-                { userId: req.user.userId },
+                { email: req.user.email },
                 { $set: profile }
             );
-
-            if(profile.email) {
-                usersCollection.updateOne(
-                    { userId: req.user.userId },
-                    { $set: { email: newProfileData.email } }
-                );
-            }
 
         } catch (err) {
             return res.status(400).send(err.message);
@@ -75,8 +66,6 @@ const profileController =
 
 const validateProfileData = async (data) => {
     const validators = {
-        email: validateUtils.validateEmail,
-        password: validateUtils.validatePassword,
         full_name: validateUtils.validateFullName,
         date_of_birth: validateUtils.validateDateOfBirth,
         photo_url: validateUtils.validateUrl
@@ -87,10 +76,6 @@ const validateProfileData = async (data) => {
         if (data[key] && validators[key]) {
             if (!validators[key](data[key])) {
                 throw new Error(`Please enter valid ${key}!`);
-            }
-
-            if (key === constants.EMAIL && await validateUtils.isEmailExists(data.email)) {
-                throw new Error("Email already exists!");
             }
         }
     }

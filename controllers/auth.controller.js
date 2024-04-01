@@ -18,7 +18,7 @@ const authController = {
         }
 
         // Get access token and refresh token
-        const payload = { userId: user.userId };
+        const payload = { email: user.email };
 
         const access_token = jwtService.getAccessToken(payload);
         const refresh_token = await jwtService.getRefreshToken(payload);
@@ -34,15 +34,12 @@ const authController = {
 
         const registryData = req.body;
 
-        const userId = uuidv4();
-
         try {
             await validateRegistryData(registryData);
 
             // Add user account
             await usersCollection.insertOne(
                 {
-                    userId: userId,
                     email: registryData.email,
                     password: registryData.password,
                 }
@@ -51,7 +48,6 @@ const authController = {
             // Add user profile
             await profilesCollection.insertOne(
                 {
-                    userId: userId,
                     email: registryData.email,
                     full_name: registryData.full_name,
                     date_of_birth: registryData.date_of_birth,
@@ -63,7 +59,7 @@ const authController = {
         }
 
         // Get access token and refresh token
-        const payload = { userId: userId };
+        const payload = { email: registryData.email };
 
         const access_token = jwtService.getAccessToken(payload);
         const refresh_token = await jwtService.getRefreshToken(payload);
