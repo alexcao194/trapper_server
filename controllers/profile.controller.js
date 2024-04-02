@@ -52,7 +52,7 @@ const profileController =
             );
 
         } catch (err) {
-            return res.status(400).send(err.message);
+            return res.status(401).send(err.message);
         }
 
         res.send(profile);
