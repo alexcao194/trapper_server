@@ -1,6 +1,5 @@
 const jwtService = require("../jwt/jwt.service");
 const { connectDb } = require('../config/mongo.config');
-const { v4: uuidv4 } = require("uuid");
 const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
 

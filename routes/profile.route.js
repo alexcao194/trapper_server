@@ -7,4 +7,6 @@ profileRoute.get("/", jwtMiddleware.validateToken, profileController.getProfile)
 
 profileRoute.post("/", jwtMiddleware.validateToken, profileController.updateProfile);
 
+profileRoute.get("/hobbies", jwtMiddleware.validateToken, profileController.getHobbies);
+
 module.exports = profileRoute;
