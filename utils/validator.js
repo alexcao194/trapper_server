@@ -21,7 +21,7 @@ const validateUtils =
         return validator.isStrongPassword(password);
     },
 
-    // Kiểm tra họ tên theo đinh dạng: "Nguyễn Văn A"
+    // Validate full name
     validateFullName: (name) => {
         if (!name) {
             return false;
@@ -41,12 +41,12 @@ const validateUtils =
             return false;
         }
 
-        // Kiểm tra định dạng ngày
+        // Validate date format
         if (!moment(date, 'DD/MM/YYYY', true).isValid()) {
             return false;
         }
 
-        // So sánh với thời gian hiện tại
+        // Compare birth date with current date
         const birthDate = moment(date, 'DD/MM/YYYY');
         const currentDate = moment();
 
@@ -63,7 +63,7 @@ const validateUtils =
         }
 
         return validator.isURL(url, {
-            // cho phép các tên miền không có top-level domain (VD: localhost)
+            // Allow URLs without top-level domain (e.g. localhost)
             require_tld: false 
         });
     },

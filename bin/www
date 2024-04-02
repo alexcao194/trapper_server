@@ -21,6 +21,10 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+// Initialize a new instance of socket.io by passing the HTTP server object
+var socket = require('../socket/index').init(server);
+
+
 /**
  * Listen on provided port, on all network interfaces.
  */
