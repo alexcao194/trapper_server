@@ -1,6 +1,7 @@
 const constants = Object.freeze({
     PROFILES: 'profiles',
     USERS: 'users',
+    ROOMS_INFO : 'roomsInfo',
     EMAIL: 'email',
     PASSWORD: 'password',
 

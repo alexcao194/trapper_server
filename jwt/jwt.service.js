@@ -10,7 +10,7 @@ const START_HEADER_AUTH = "Bearer ";
 const jwtService =
 {
     getAccessToken: payload => {
-        return jwt.sign({ user: payload }, jwtSecretString, { expiresIn: "15min" });
+        return jwt.sign({ user: payload }, jwtSecretString, { expiresIn: "150min" });
     },
 
     getRefreshToken: async (payload) => {
@@ -18,13 +18,13 @@ const jwtService =
         const collection = db.collection(REFRESH_TOKENS);
 
         const userRefreshTokens = await collection
-            .find({ email: payload.email })
+            .find({ userId: payload._id })
             .toArray();
 
-        // Nếu có >= 5 refresh token thì
-        // xóa tất cả refresh token của user đó và chỉ giữ lại cái mới để bảo mật
+        // if user has more than 5 refresh tokens
+        // remove all of them and create new one
         if (userRefreshTokens.length >= 5) {
-            await collection.drop({ email: payload.email });
+            await collection.drop({ userId: payload._id });
         }
 
         const refreshToken = jwt.sign({ user: payload }, jwtSecretString, {
@@ -32,7 +32,7 @@ const jwtService =
         });
 
         let result = await collection.insertOne(
-            { email: payload.email, refreshToken },
+            { userId: payload._id, refreshToken },
             (err, result) => {
                 if (err) {
                     throw err;
@@ -58,9 +58,9 @@ const jwtService =
         const usersCollection = db.collection(constants.USERS);
         const collection = db.collection(REFRESH_TOKENS);
 
-        const decodedToken = jwt.verify(token, jwtSecretString);
+        const userData = this.verifyJWTToken(token);
 
-        const user = await usersCollection.findOne({ email: decodedToken.user.email });
+        const user = await usersCollection.findOne({ userId: userData._id });
         // var userDocument = user.hasNext() ? user.next() : null
 
         if (!user) {
@@ -69,7 +69,7 @@ const jwtService =
 
         // get all user's refresh tokens from DB
         const allRefreshTokens = await collection
-            .find({ email: user.email })
+            .find({ userId: user._id })
             .toArray();
 
         if (!allRefreshTokens || !allRefreshTokens.length) {
@@ -84,7 +84,7 @@ const jwtService =
             throw new Error(`Refresh token is wrong`);
         }
         // user's data for new tokens
-        const payload = { email: user.email };
+        const payload = { _id: user._id };
         // get new refresh and access token
         const access_token = await getUpdatedRefreshToken(token, payload);
         const refresh_token = getAccessToken(payload);

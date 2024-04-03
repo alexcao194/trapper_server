@@ -5,7 +5,7 @@ const constants = require('../utils/constants');
 const profileController =
 {
     getProfile: async (req, res) => {
-        const profile = await getProfileData(req.user.email);
+        const profile = await getProfileData(req.user._id);
 
         if (!profile) {
             return res.status(404).send("Profile not found!");
@@ -19,9 +19,9 @@ const profileController =
         const usersCollection = db.collection(constants.USERS);
         const profilesCollection = db.collection(constants.PROFILES);
 
-        // Tìm profile theo email
+        // Find profile by _id
         let profile = await profilesCollection.findOne(
-            { email: req.user.email },
+            { _id: req.user._id },
         );
 
         if (!profile) {
@@ -31,7 +31,7 @@ const profileController =
         // Validate new profile data
         const newProfileData = req.body;
 
-        // Nếu null hết thì trả về data cũ
+        // If data null, return old profile
         if (!newProfileData) {
             return res.send(profile);
         }
@@ -47,7 +47,7 @@ const profileController =
             });
 
             await profilesCollection.updateOne(
-                { email: req.user.email },
+                { _id: req.user._id },
                 { $set: profile }
             );
 
@@ -55,11 +55,13 @@ const profileController =
             return res.status(401).send(err.message);
         }
 
+        delete profile._id;
+
         res.send(profile);
     },
 
     getHobbies: async (req, res) => {
-        const profile = await getProfileData(req.user.email);
+        const profile = await getProfileData(req.user._id);
 
         if (!profile) {
             return res.status(404).send("Profile not found!");
@@ -77,7 +79,7 @@ const validateProfileData = async (data) => {
     };
 
     for (let key in data) {
-        // Nếu trường dữ liệu ko null và có hàm validate tương ứng
+        // if data[key] is not null and validators[key] exists
         if (data[key] && validators[key]) {
             if (!validators[key](data[key])) {
                 throw new Error(`Please enter valid ${key}!`);
@@ -86,12 +88,13 @@ const validateProfileData = async (data) => {
     }
 };
 
-const getProfileData = async (email) => {
+const getProfileData = async (_id) => {
     const { db, client } = await connectDb();
     const profilesCollection = db.collection(constants.PROFILES);
 
     const profile = await profilesCollection.findOne(
-        { email: email },
+        { _id: _id },
+        { projection: { _id: 0, _id: 0 }}
     );
 
     if (!profile) {
