@@ -18,13 +18,13 @@ const jwtService =
         const collection = db.collection(REFRESH_TOKENS);
 
         const userRefreshTokens = await collection
-            .find({ userId: payload.userId })
+            .find({ userId: payload._id })
             .toArray();
 
         // if user has more than 5 refresh tokens
         // remove all of them and create new one
         if (userRefreshTokens.length >= 5) {
-            await collection.drop({ userId: payload.userId });
+            await collection.drop({ userId: payload._id });
         }
 
         const refreshToken = jwt.sign({ user: payload }, jwtSecretString, {
@@ -32,7 +32,7 @@ const jwtService =
         });
 
         let result = await collection.insertOne(
-            { userId: payload.userId, refreshToken },
+            { userId: payload._id, refreshToken },
             (err, result) => {
                 if (err) {
                     throw err;
@@ -60,7 +60,7 @@ const jwtService =
 
         const userData = this.verifyJWTToken(token);
 
-        const user = await usersCollection.findOne({ userId: userData.userId });
+        const user = await usersCollection.findOne({ userId: userData._id });
         // var userDocument = user.hasNext() ? user.next() : null
 
         if (!user) {
@@ -69,7 +69,7 @@ const jwtService =
 
         // get all user's refresh tokens from DB
         const allRefreshTokens = await collection
-            .find({ userId: user.userId })
+            .find({ userId: user._id })
             .toArray();
 
         if (!allRefreshTokens || !allRefreshTokens.length) {
@@ -84,7 +84,7 @@ const jwtService =
             throw new Error(`Refresh token is wrong`);
         }
         // user's data for new tokens
-        const payload = { userId: user.userId };
+        const payload = { _id: user._id };
         // get new refresh and access token
         const access_token = await getUpdatedRefreshToken(token, payload);
         const refresh_token = getAccessToken(payload);

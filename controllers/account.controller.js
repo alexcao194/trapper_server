@@ -15,7 +15,7 @@ const accountController = {
 
             // Update password
             await usersCollection.updateOne(
-                { userId: req.user.userId },
+                { _id: req.user._id },
                 { $set: { password: newPassword } }
             );
 

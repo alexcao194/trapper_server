@@ -3,7 +3,7 @@ const jwtService = require("../jwt/jwt.service");
 const jwtMiddleware =
 {
     validateToken: (req, res, next) => {
-        // Lấy token từ header
+        // Get token from headers
         let token = req.headers["access_token"] || req.headers["authorization"];
 
         // Check null or undefined

@@ -5,7 +5,7 @@ const constants = require('../utils/constants');
 const profileController =
 {
     getProfile: async (req, res) => {
-        const profile = await getProfileData(req.user.userId);
+        const profile = await getProfileData(req.user._id);
 
         if (!profile) {
             return res.status(404).send("Profile not found!");
@@ -19,9 +19,9 @@ const profileController =
         const usersCollection = db.collection(constants.USERS);
         const profilesCollection = db.collection(constants.PROFILES);
 
-        // Find profile by userId
+        // Find profile by _id
         let profile = await profilesCollection.findOne(
-            { userId: req.user.userId },
+            { _id: req.user._id },
         );
 
         if (!profile) {
@@ -47,7 +47,7 @@ const profileController =
             });
 
             await profilesCollection.updateOne(
-                { userId: req.user.userId },
+                { _id: req.user._id },
                 { $set: profile }
             );
 
@@ -56,13 +56,12 @@ const profileController =
         }
 
         delete profile._id;
-        delete profile.userId;
 
         res.send(profile);
     },
 
     getHobbies: async (req, res) => {
-        const profile = await getProfileData(req.user.userId);
+        const profile = await getProfileData(req.user._id);
 
         if (!profile) {
             return res.status(404).send("Profile not found!");
@@ -89,13 +88,13 @@ const validateProfileData = async (data) => {
     }
 };
 
-const getProfileData = async (userId) => {
+const getProfileData = async (_id) => {
     const { db, client } = await connectDb();
     const profilesCollection = db.collection(constants.PROFILES);
 
     const profile = await profilesCollection.findOne(
-        { userId: userId },
-        { projection: { _id: 0, userId: 0 }}
+        { _id: _id },
+        { projection: { _id: 0, _id: 0 }}
     );
 
     if (!profile) {
