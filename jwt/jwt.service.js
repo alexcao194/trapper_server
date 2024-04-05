@@ -47,27 +47,29 @@ const jwtService =
         if (token.startsWith(START_HEADER_AUTH)) {
             token = token.slice(7, token.length);
         }
-
+        console.log(token);
         const decodedToken = jwt.verify(token, jwtSecretString)
         return decodedToken.user;
     },
 
-    refreshToken: async token => {
+    refreshToken: async (token) => {
         const { db, client } = await connectDb();
 
         const usersCollection = db.collection(constants.USERS);
         const collection = db.collection(REFRESH_TOKENS);
 
-        const userData = this.verifyJWTToken(token);
+        if (token.startsWith(START_HEADER_AUTH)) {
+            token = token.slice(7, token.length);
+        }
+        const decodedToken = jwt.verify(token, jwtSecretString)
 
+        const userData = decodedToken.user;
         const user = await usersCollection.findOne({ userId: userData._id });
-        // var userDocument = user.hasNext() ? user.next() : null
 
         if (!user) {
             throw new Error(`Access is forbidden`);
         }
 
-        // get all user's refresh tokens from DB
         const allRefreshTokens = await collection
             .find({ userId: user._id })
             .toArray();
