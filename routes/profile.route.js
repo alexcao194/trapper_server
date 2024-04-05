@@ -9,8 +9,6 @@ profileRoute.get("/", jwtMiddleware.validateToken, profileController.getProfile)
 
 profileRoute.post("/", jwtMiddleware.validateToken, profileController.updateProfile);
 
-profileRoute.get("/hobbies", jwtMiddleware.validateToken, profileController.getHobbies);
-
 profileRoute.post("/avatar", storage.upload.single('avatar'), storageController.uploadAvatar);
 
 module.exports = profileRoute;

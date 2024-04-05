@@ -59,16 +59,6 @@ const profileController =
 
         res.send(profile);
     },
-
-    getHobbies: async (req, res) => {
-        const profile = await getProfileData(req.user._id);
-
-        if (!profile) {
-            return res.status(404).send("Profile not found!");
-        }
-
-        res.send(profile.hobbies);
-    },
 }
 
 const validateProfileData = async (data) => {
