@@ -1,6 +1,7 @@
 const storageController = {
     uploadAvatar: (req, res, next) => {
         const file = req.file
+        console.log(req.files)
         if (!file) {
             const error = new Error("file-invalid");
             error.httpStatusCode = 400;
