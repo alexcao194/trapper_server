@@ -9,6 +9,6 @@ profileRoute.get("/", jwtMiddleware.validateToken, profileController.getProfile)
 
 profileRoute.post("/", jwtMiddleware.validateToken, profileController.updateProfile);
 
-profileRoute.post("/avatar", storage.upload.single('avatar'), storageController.uploadAvatar);
+profileRoute.post("/avatar", jwtMiddleware.validateToken, storage.upload.single('photo_url'), storageController.uploadAvatar);
 
 module.exports = profileRoute;

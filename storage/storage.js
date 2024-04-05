@@ -3,10 +3,17 @@ const fs = require('fs')
 
 const storageAvatar = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, 'users')
+        const path = 'data/avatar'
+        if (!fs.existsSync(path)) {
+            fs.mkdirSync(path, { recursive: true })
+        }
+        cb(null, 'data/avatar')
     },
     filename: function(req, file, cb) {
-        cb(null, file.originalname)
+        console.log(req.user)
+        var id = req.user._id
+        var extension = file.originalname.split('.').pop()
+        cb(null, `${id}.${extension}`)
     }
 })
 

@@ -16,7 +16,6 @@ const profileController =
 
     updateProfile: async (req, res) => {
         const { db, client } = await connectDb();
-        const usersCollection = db.collection(constants.USERS);
         const profilesCollection = db.collection(constants.PROFILES);
 
         // Find profile by _id
