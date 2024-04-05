@@ -10,10 +10,10 @@ const storageAvatar = multer.diskStorage({
         cb(null, 'data/avatar')
     },
     filename: function(req, file, cb) {
-        console.log(req.user)
         var id = req.user._id
         var extension = file.originalname.split('.').pop()
-        cb(null, `${id}.${extension}`)
+        var date = new Date()
+        cb(null, `${id}-${date.getTime()}.${extension}`)
     }
 })
 
