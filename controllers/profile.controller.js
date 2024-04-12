@@ -30,6 +30,8 @@ const profileController =
             return res.status(404).send("Profile not found!");
         }
 
+        profile.photos = storage.getNewestFiles(req.user._id);
+
         // Validate new profile data
         const newProfileData = req.body;
 
