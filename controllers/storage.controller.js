@@ -24,7 +24,7 @@ const storageController = {
         }
         res.send({
             uploaded: true,
-            photos: storage.getNewestFiles(id),
+            photos: storage.getNewestPhotos(id),
             photo_url: file.path
         })
     }
