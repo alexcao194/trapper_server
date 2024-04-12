@@ -12,8 +12,8 @@ const profileController =
             return res.status(404).send("Profile not found!");
         }
         
-        profile.photos = storage.getNewestFiles(req.user._id);
-
+        profile.photos = storage.getNewestPhotos(req.user._id);
+        profile.photo_url = storage.getAvatar(req.user._id);
         res.send(profile);
     },
 
@@ -30,7 +30,8 @@ const profileController =
             return res.status(404).send("Profile not found!");
         }
 
-        profile.photos = storage.getNewestFiles(req.user._id);
+        profile.photos = storage.getNewestPhotos(req.user._id);
+        profile.photo_url = storage.getAvatar(req.user._id);
 
         // Validate new profile data
         const newProfileData = req.body;
