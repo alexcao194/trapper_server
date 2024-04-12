@@ -47,7 +47,6 @@ const jwtService =
         if (token.startsWith(START_HEADER_AUTH)) {
             token = token.slice(7, token.length);
         }
-        console.log(token);
         const decodedToken = jwt.verify(token, jwtSecretString)
         return decodedToken.user;
     },

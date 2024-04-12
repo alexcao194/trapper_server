@@ -1,6 +1,7 @@
 const { connectDb } = require('../config/mongo.config');
 const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
+const storage = require('../storage/storage');
 
 const profileController =
 {
@@ -10,6 +11,8 @@ const profileController =
         if (!profile) {
             return res.status(404).send("Profile not found!");
         }
+        
+        profile.photos = storage.getNewestFiles(req.user._id);
 
         res.send(profile);
     },

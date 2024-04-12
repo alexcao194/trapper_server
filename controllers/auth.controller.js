@@ -57,6 +57,8 @@ const authController = {
                     full_name: registryData.full_name,
                     date_of_birth: registryData.date_of_birth,
                     gender: registryData.gender,
+                    bio: "",
+                    hobbies: [],
                 }
             );
         } catch (err) {
@@ -74,7 +76,6 @@ const authController = {
 
     refreshToken: async (req, res) => {
         const refreshToken = req.headers["refresh_token"];
-        console.log(refreshToken);
         if (!refreshToken) {
             return res.status(403).send("Access is forbidden");
         }
