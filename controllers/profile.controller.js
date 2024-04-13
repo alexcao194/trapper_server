@@ -89,7 +89,7 @@ const getProfileData = async (_id) => {
 
     const profile = await profilesCollection.findOne(
         { _id: _id },
-        { projection: { _id: 0, _id: 0 }}
+        { projection: { _id: 0 }}
     );
 
     if (!profile) {
