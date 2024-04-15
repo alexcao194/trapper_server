@@ -89,7 +89,7 @@ const onConnect = (io, socket) => {
             delete socket.connectedUsers[socket.id];
             delete socket.connectedUsers[userId];
         } catch(e) {
-            
+
         }
     });
 
@@ -134,7 +134,6 @@ const onConnect = (io, socket) => {
 
     socket.on(eventKey.ON_FIND, async (body) => {
         const userId = connectedUsers[socket.id];
-        console.log(userId)
         // if user is already in queue
         for (let i = 0; i < connectQueue.length; i++) {
             if (connectQueue[i].userId == userId) {
@@ -164,8 +163,7 @@ const onConnect = (io, socket) => {
             && item.data.gender == userProfile.gender
             return rs
         });
-        console.log("userMatchAgeAndGender")
-        console.log(userMatchAgeAndGender)
+
         // count hobbies match
         var hobbiesMatch = [];
         for (let user of userMatchAgeAndGender) {
@@ -181,8 +179,6 @@ const onConnect = (io, socket) => {
             });
         }
         
-        console.log("hobbiesMatch")
-        console.log(hobbiesMatch)
         // if hobbies match > 0
         if (hobbiesMatch.length > 0) {
             hobbiesMatch.sort((a, b) => {
@@ -198,7 +194,6 @@ const onConnect = (io, socket) => {
                     break;
                 }
             }
-            console.log(connectedUsers[friendId])
             io.to(connectedUsers[friendId]).emit(eventKey.ON_FOUND, {
                 profile: userProfile,
                 room_info: roomInfo
@@ -215,7 +210,6 @@ const onConnect = (io, socket) => {
                 data: data
             });
         }
-        console.log(connectQueue)
     });
 }
 
