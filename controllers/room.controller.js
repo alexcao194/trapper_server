@@ -75,7 +75,7 @@ const roomController = {
         const { db, client } = await connectDb();
         const roomInfoCollection = db.collection(constants.ROOMS_INFO);
 
-        const roomsInfo = await roomInfoCollection.findOne().toArray();
+        const roomsInfo = await roomInfoCollection.find().toArray();
 
         var room = [];
 
