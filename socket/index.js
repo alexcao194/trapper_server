@@ -218,8 +218,6 @@ const onConnect = (io, socket) => {
                 data: data
             });
         }
-        console.log("connectQueue")
-        console.log(connectQueue);
     });
 
     socket.on(eventKey.ON_FIND_CANCEL, async () => {
@@ -234,5 +232,3 @@ const onConnect = (io, socket) => {
 }
 
 module.exports = socket;
-
-// 
