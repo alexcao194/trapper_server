@@ -14,6 +14,19 @@ const socket = {
     init: (server) => {
         var io = socketIO(server);
 
+        io.use(async (socket, next) => {
+            try {
+                const token = socket.handshake.query.token;
+                const user = jwtService.verifyJWTToken(token);
+        
+                connectedUsers[socket.id] = user._id;
+                connectedUsers[user._id] = socket.id;
+                next();
+            } catch (err) {
+                next(new Error("Authentication error"));
+            }
+        });
+
         io.on(eventKey.CONNECTION, (socket) => {
             onConnect(io, socket);
         });
@@ -23,17 +36,6 @@ const socket = {
 }
 
 const onConnect = (io, socket) => {
-    // Xác thực token và lưu trữ socket id của user đó
-    try {
-        const token = socket.handshake.query.token;
-        const user = jwtService.verifyJWTToken(token);
-
-        connectedUsers[socket.id] = user._id;
-        connectedUsers[user._id] = socket.id;
-    } catch (error) {
-        socket.disconnect();
-    }
-
     // Đăng kí sự kiện Fetch rooms info
     socket.on(eventKey.FETCH_ROOMS_INFO, async () => {
         const userId = connectedUsers[socket.id];
@@ -49,7 +51,10 @@ const onConnect = (io, socket) => {
 
         const roomInfo = await roomController.getRoomInfoByMembersId(userId, partnerId);
         if(roomInfo === null) {
-            // TODO: return error
+            socket.emit(eventKey.RECEIVED_ROOMS_MESSAGES, {
+                error: "room-not-found"
+            });
+            return;
         }
 
         const messages = await messageController.getMessagesByRoom(roomInfo._id);

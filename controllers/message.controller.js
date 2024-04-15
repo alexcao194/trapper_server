@@ -63,7 +63,7 @@ const messageController = {
             }
 
         } catch (error) {
-            const message = "Error when send message"
+            const message = "send-message-failed"
             socket.emit(eventKey.RECEIVED_MESSAGE, message);
         }
     }
