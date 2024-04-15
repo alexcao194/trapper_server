@@ -31,7 +31,11 @@ const socket = {
 
         io.use(async (socket, next) => {
             try {
-                const token = socket.handshake.headers.access_token;
+                let token = socket.handshake.auth['access_token'];
+                // check what if auth is empty
+                if (!token) {
+                    token = socket.handshake.headers.access_token
+                }
                 const user = jwtService.verifyJWTToken(token);
         
                 connectedUsers[socket.id] = user._id;
@@ -175,10 +179,12 @@ const onConnect = (io, socket) => {
                     match++;
                 }
             }
-            hobbiesMatch.push({
-                userId: user.userId,
-                match: match
-            });
+            if (match > 0) {
+                hobbiesMatch.push({
+                    userId: user.userId,
+                    match: match
+                });
+            }
         }
         
         // if hobbies match > 0
@@ -212,6 +218,8 @@ const onConnect = (io, socket) => {
                 data: data
             });
         }
+        console.log("connectQueue")
+        console.log(connectQueue);
     });
 
     socket.on(eventKey.ON_FIND_CANCEL, async () => {
@@ -226,3 +234,5 @@ const onConnect = (io, socket) => {
 }
 
 module.exports = socket;
+
+// 
