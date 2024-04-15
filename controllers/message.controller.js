@@ -5,6 +5,23 @@ const { v4: uuidv4 } = require('uuid');
 const roomController = require('./room.controller');
 
 const messageController = {
+
+    createRoomMessage: async (roomId) => {
+        try {
+            const { db, client } = await connectDb();
+            const roomMessagesCollection = db.collection(constants.ROOM_MESSAGES);
+
+            const roomMessage = {
+                _id: roomId,
+                list_messages: []
+            };
+
+            await roomMessagesCollection.insertOne(roomMessage);
+        } catch (error) {
+            // TODO: return error to client
+        }
+    },
+
     getMessagesByRoom: async (roomId) => {
         try {
             const { db, client } = await connectDb();
