@@ -15,6 +15,9 @@ const CHAT_EVENT = Object.freeze({
     FRIEND_REQUEST: 'on_friend_request',
     RECEIVED_FRIEND_REQUEST: 'on_received_friend_request',
     ACCEPT_FRIEND_REQUEST: 'on_accept_friend_request',
+
+    ON_FIND: 'on_find',
+    ON_FOUND: 'on_found',
 });
 
 module.exports = CHAT_EVENT;

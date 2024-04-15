@@ -10,6 +10,19 @@ const { v4: uuidv4 } = require("uuid");
 
 let connectedUsers = {};
 let friendRequests = {};
+// queue data:
+// {
+//     "userId": "userId",
+//     "age": 20,
+//     "gender": true,
+//     "data": {
+//        "max_age": 30,
+//        "min_age": 20,
+//        "hobbies": ["football", "music"],
+//        "gender": true
+// }
+// }
+let connectQueue = [];
 
 const socket = {
     // Khởi tạo socket
@@ -72,8 +85,12 @@ const onConnect = (io, socket) => {
     socket.on(eventKey.DISCONNECT, () => {
         const userId = connectedUsers[socket.id];
 
-        delete socket.connectedUsers[socket.id];
-        delete socket.connectedUsers[userId];
+        try {
+            delete socket.connectedUsers[socket.id];
+            delete socket.connectedUsers[userId];
+        } catch(e) {
+            
+        }
     });
 
     // friend request
@@ -113,6 +130,92 @@ const onConnect = (io, socket) => {
                 profile: userProfile
             });
         }
+    });
+
+    socket.on(eventKey.ON_FIND, async (body) => {
+        const userId = connectedUsers[socket.id];
+        console.log(userId)
+        // if user is already in queue
+        for (let i = 0; i < connectQueue.length; i++) {
+            if (connectQueue[i].userId == userId) {
+                connectQueue.splice(i, 1);
+                break;
+            }
+        }
+
+        const userProfile = await profileController.getProfileData(userId);
+        var data = {
+            minAge: body.min_age,
+            maxAge: body.max_age,
+            hobbies: body.hobbies,
+            gender: body.gender
+        };
+
+        var userMatchAgeAndGender = connectQueue.filter((item) => {
+            var userAge = new Date().getFullYear() - userProfile.date_of_birth.split("/")[2];
+            var rs = item.age >= data.minAge 
+            && item.age <= data.maxAge
+            && item.gender == data.gender 
+
+            && item.userId != userId
+
+            && item.data.minAge <= userAge
+            && item.data.maxAge >= userAge
+            && item.data.gender == userProfile.gender
+            return rs
+        });
+        console.log("userMatchAgeAndGender")
+        console.log(userMatchAgeAndGender)
+        // count hobbies match
+        var hobbiesMatch = [];
+        for (let user of userMatchAgeAndGender) {
+            var match = 0;
+            for (let hobby of user.data.hobbies) {
+                if (data.hobbies.includes(hobby)) {
+                    match++;
+                }
+            }
+            hobbiesMatch.push({
+                userId: user.userId,
+                match: match
+            });
+        }
+        
+        console.log("hobbiesMatch")
+        console.log(hobbiesMatch)
+        // if hobbies match > 0
+        if (hobbiesMatch.length > 0) {
+            hobbiesMatch.sort((a, b) => {
+                return b.match - a.match;
+            });
+            var friendId = hobbiesMatch[0].userId;
+            var friendProfile = await profileController.getProfileData(friendId);
+            var roomInfo = await roomController.createRoomInfo(userId, friendId);
+            // remove 
+            for (let i = 0; i < connectQueue.length; i++) {
+                if (connectQueue[i].userId == friendId) {
+                    connectQueue.splice(i, 1);
+                    break;
+                }
+            }
+            console.log(connectedUsers[friendId])
+            io.to(connectedUsers[friendId]).emit(eventKey.ON_FOUND, {
+                profile: userProfile,
+                room_info: roomInfo
+            });
+            socket.emit(eventKey.ON_FOUND, {
+                profile: friendProfile,
+                room_info: roomInfo
+            });
+        } else {
+            connectQueue.push({
+                userId: userId,
+                age: new Date().getFullYear() - userProfile.date_of_birth.split("/")[2],
+                gender: userProfile.gender,
+                data: data
+            });
+        }
+        console.log(connectQueue)
     });
 }
 
