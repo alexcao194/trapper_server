@@ -150,6 +150,8 @@ const onConnect = (io, socket) => {
             gender: body.gender
         };
 
+        profileController.updateHobbies(userId, body.hobbies);
+
         var userMatchAgeAndGender = connectQueue.filter((item) => {
             var userAge = new Date().getFullYear() - userProfile.date_of_birth.split("/")[2];
             var rs = item.age >= data.minAge 

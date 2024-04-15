@@ -136,6 +136,29 @@ const profileController =
         await friendsCollection.insertOne({
             members: [userId, friendId]
         });
+    },
+
+    updateHobbies: async (userId, hobbies) => {
+        const { db, client } = await connectDb();
+        const profilesCollection = db.collection(constants.PROFILES);
+
+        // Find profile by _id
+        let profile = await profilesCollection.findOne(
+            { _id: userId },
+        );
+
+        if (!profile) {
+            return null;
+        }
+
+        profile.hobbies = hobbies;
+
+        await profilesCollection.updateOne(
+            { _id: userId },
+            { $set: profile }
+        );
+
+        return profile;
     }
 }
 
