@@ -16,7 +16,7 @@ const socket = {
 
         io.use(async (socket, next) => {
             try {
-                const token = socket.handshake.query.token;
+                const token = socket.handshake.headers.access_token;
                 const user = jwtService.verifyJWTToken(token);
         
                 connectedUsers[socket.id] = user._id;
