@@ -64,40 +64,44 @@ const profileController =
 
         res.send(profile);
     },
-}
 
-const validateProfileData = async (data) => {
-    const validators = {
-        full_name: validateUtils.validateFullName,
-        date_of_birth: validateUtils.validateDateOfBirth,
-        photo_url: validateUtils.validateUrl
-    };
-
-    for (let key in data) {
-        // if data[key] is not null and validators[key] exists
-        if (data[key] && validators[key]) {
-            if (!validators[key](data[key])) {
-                throw new Error(`invalid-${key}!`);
+    validateProfileData: async (data) => {
+        const validators = {
+            full_name: validateUtils.validateFullName,
+            date_of_birth: validateUtils.validateDateOfBirth,
+            photo_url: validateUtils.validateUrl
+        };
+    
+        for (let key in data) {
+            // if data[key] is not null and validators[key] exists
+            if (data[key] && validators[key]) {
+                if (!validators[key](data[key])) {
+                    throw new Error(`invalid-${key}!`);
+                }
             }
         }
+    },
+
+    getProfileData: async (_id) => {
+        const { db, client } = await connectDb();
+        const profilesCollection = db.collection(constants.PROFILES);
+    
+        const profile = await profilesCollection.findOne(
+            { _id: _id },
+            { projection: { _id: 0 }}
+        );
+    
+        if (!profile) {
+            return null;
+        }
+    
+        return profile;
     }
-};
-
-const getProfileData = async (_id) => {
-    const { db, client } = await connectDb();
-    const profilesCollection = db.collection(constants.PROFILES);
-
-    const profile = await profilesCollection.findOne(
-        { _id: _id },
-        { projection: { _id: 0 }}
-    );
-
-    if (!profile) {
-        return null;
-    }
-
-    return profile;
 }
+
+
+
+
 
 
 module.exports = profileController;

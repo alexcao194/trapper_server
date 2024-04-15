@@ -11,6 +11,10 @@ const CHAT_EVENT = Object.freeze({
 
     SEND_MESSAGE: 'on_send_message',
     RECEIVED_MESSAGE: 'on_received_message',
+
+    FRIEND_REQUEST: 'on_friend_request',
+    RECEIVED_FRIEND_REQUEST: 'on_received_friend_request',
+    ACCEPT_FRIEND_REQUEST: 'on_accept_friend_request',
 });
 
 module.exports = CHAT_EVENT;

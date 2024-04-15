@@ -2,12 +2,15 @@ const socketIO = require('socket.io');
 const jwtService = require("../jwt/jwt.service");
 const messageController = require("../controllers/message.controller")
 const roomController = require("../controllers/room.controller")
+const friendController = require("../controllers/friend.controller")
+const profileController = require("../controllers/profile.controller")
 const { connectDb } = require('../config/mongo.config');
 const constants = require('../utils/constants');
 const eventKey = require('./event');
 const { v4: uuidv4 } = require("uuid");
 
 let connectedUsers = {};
+let friendRequests = {};
 
 const socket = {
     // Khởi tạo socket
@@ -72,6 +75,45 @@ const onConnect = (io, socket) => {
 
         delete socket.connectedUsers[socket.id];
         delete socket.connectedUsers[userId];
+    });
+
+    // friend request
+    socket.on(eventKey.FRIEND_REQUEST, async (body) => {
+        const userId = connectedUsers[socket.id];
+        const friendId = body.userId;
+
+        var friends = await friendController.getFriends(userId);
+        if (friends.includes(friendId)) {
+            return;
+        }
+
+        if (friendRequests[friendId]) {
+            if (friendRequests[friendId].includes(userId)) {
+                await friendController.createRelationship(userId, friendId);
+                delete friendRequests[friendId];
+
+                var userProfile = await profileController.getProfileData(userId);
+                var friendProfile = await profileController.getProfileData(friendId);
+
+                // emit to friendId and userId
+                io.to(connectedUsers[friendId]).emit(eventKey.ACCEPT_FRIEND_REQUEST, {
+                    profile: userProfile
+                });
+                socket.emit(eventKey.ACCEPT_FRIEND_REQUEST, {
+                    profile: friendProfile
+                });
+            }
+        } else {
+            if (friendRequests[userId]) {
+                friendRequests[userId].push(friendId);
+            } else {
+                friendRequests[userId] = [friendId];
+            }
+            var userProfile = await profileController.getProfileData(userId);
+            io.to(connectedUsers[friendId]).emit(eventKey.RECEIVED_FRIEND_REQUEST, {
+                profile: userProfile
+            });
+        }
     });
 }
 
