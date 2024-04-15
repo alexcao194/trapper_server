@@ -7,14 +7,18 @@ const roomController = {
     getRoomsInfoByUserId: async (userId) => {
         try {
             const { db, client } = await connectDb();
+            console.log(userId)
             const roomInfoCollection = db.collection(constants.ROOMS_INFO);
+            const roomsInfo = await roomInfoCollection.find().toArray();
 
-            const roomsInfo = await roomInfoCollection.find(
-                { list_members : userId },
-                { projection: { _id: 0 } }
-            ).toArray();
+            var rooms = [];
+            for (let i = 0; i < roomsInfo.length; i++) {
+                if (roomsInfo[i].list_members.includes(userId)) {
+                    rooms.push(roomsInfo[i]);
+                }
+            }
 
-            return roomsInfo;
+            return rooms;
         } catch (error) {
             // TODO: return error to client
         }
@@ -65,6 +69,23 @@ const roomController = {
         } catch (error) {
             // TODO: return error
         }
+    },
+
+    findWithMembers: async (userId1, userId2) => {
+        const { db, client } = await connectDb();
+        const roomInfoCollection = db.collection(constants.ROOMS_INFO);
+
+        const roomsInfo = await roomInfoCollection.findOne().toArray();
+
+        var room = [];
+
+        for (let i = 0; i < roomsInfo.length; i++) {
+            if (roomsInfo[i].list_members.includes(userId1) && roomsInfo[i].list_members.includes(userId2)) {
+                room.push(roomsInfo[i]);
+            }
+        }
+
+        return roomInfo[0];
     }
 }
 

@@ -194,7 +194,12 @@ const onConnect = (io, socket) => {
             });
             var friendId = hobbiesMatch[0].userId;
             var friendProfile = await profileController.getProfileData(friendId);
-            var roomInfo = await roomController.createRoomInfo(userId, friendId);
+            var roomInfo = await roomController.findWithMembers(userId, friendId);
+            console.log(roomInfo);
+            if (!roomInfo) {
+                roomInfo = await roomController.createRoomInfo(userId, friendId);
+                console.log(roomInfo);
+            }
             // remove 
             for (let i = 0; i < connectQueue.length; i++) {
                 if (connectQueue[i].userId == friendId) {
