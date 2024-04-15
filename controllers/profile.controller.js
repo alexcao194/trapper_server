@@ -6,7 +6,7 @@ const storage = require('../storage/storage');
 const profileController =
 {
     getProfile: async (req, res) => {
-        const profile = await getProfileData(req.user._id);
+        const profile = await profileController.getProfileData(req.user._id);
 
         if (!profile) {
             return res.status(404).send("profile-not-found");
@@ -42,7 +42,7 @@ const profileController =
         }
 
         try {
-            await validateProfileData(newProfileData);
+            await profileController.validateProfileData(newProfileData);
 
             // Cập nhật profile
             Object.keys(newProfileData).forEach(key => {
