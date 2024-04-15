@@ -25,7 +25,7 @@ const roomController = {
         }
     },
 
-    getRoomInfoById :  async (roomId) => {
+    getRoomInfoById: async (roomId) => {
         try {
             const { db, client } = await connectDb();
             const roomInfoCollection = db.collection(constants.ROOMS_INFO);
@@ -41,7 +41,7 @@ const roomController = {
         }
     },
 
-    getRoomInfoByMembersId : async (userId, partnerId) => {
+    getRoomInfoByMembersId: async (userId, partnerId) => {
         const { db, client } = await connectDb();
         const roomInfoCollection = db.collection(constants.ROOMS_INFO);
 
@@ -78,17 +78,11 @@ const roomController = {
         const { db, client } = await connectDb();
         const roomInfoCollection = db.collection(constants.ROOMS_INFO);
 
-        const roomsInfo = await roomInfoCollection.find().toArray();
+        const roomsInfo = await roomInfoCollection.findOne(
+            { list_members: { $all: [userId1, userId2] } }
+        );
 
-        var room = [];
-
-        for (let i = 0; i < roomsInfo.length; i++) {
-            if (roomsInfo[i].list_members.includes(userId1) && roomsInfo[i].list_members.includes(userId2)) {
-                room.push(roomsInfo[i]);
-            }
-        }
-
-        return roomInfo[0];
+        return roomsInfo;
     }
 }
 
