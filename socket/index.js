@@ -213,6 +213,16 @@ const onConnect = (io, socket) => {
             });
         }
     });
+
+    socket.on(eventKey.ON_FIND_CANCEL, async () => {
+        const userId = connectedUsers[socket.id];
+        for (let i = 0; i < connectQueue.length; i++) {
+            if (connectQueue[i].userId == userId) {
+                connectQueue.splice(i, 1);
+                break;
+            }
+        }
+    });
 }
 
 module.exports = socket;

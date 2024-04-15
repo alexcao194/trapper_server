@@ -18,6 +18,7 @@ const CHAT_EVENT = Object.freeze({
 
     ON_FIND: 'on_find',
     ON_FOUND: 'on_found',
+    ON_FIND_CANCEL: 'on_find_cancel',
 });
 
 module.exports = CHAT_EVENT;
