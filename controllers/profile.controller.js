@@ -96,6 +96,46 @@ const profileController =
         }
     
         return profile;
+    },
+
+    getFriends: async (req, res) => {
+        const userId = req.user._id;
+
+        if (!userId) {
+            return res.status(401).send("user-not-found");
+        }
+
+        // map to profile data
+        const friends = await profileController.getFriendsData(userId);
+        const profiles = [];
+        for (let friendId of friends) {
+            const profile = await profileController.getProfileData(friendId);
+            profiles.push(profile);
+        }
+        res.send(profiles);
+    },
+
+    getFriendsData: async (userId) => {
+        const { db, client } = await connectDb();
+        const friendsCollection = db.collection("relationship");
+
+        // get all records that contain userId
+        const friends = await friendsCollection.find({ members: userId }).toArray();
+        
+        // return list of members that are not userId
+        return friends.map(friend => {
+            return friend.members.find(member => member !== userId);
+        });
+    },
+
+    createRelationship: async (userId, friendId) => {
+        const { db, client } = await connectDb();
+        const friendsCollection = db.collection("relationship");
+
+        // create relationship
+        await friendsCollection.insertOne({
+            members: [userId, friendId]
+        });
     }
 }
 

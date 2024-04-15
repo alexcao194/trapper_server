@@ -2,7 +2,6 @@ const socketIO = require('socket.io');
 const jwtService = require("../jwt/jwt.service");
 const messageController = require("../controllers/message.controller")
 const roomController = require("../controllers/room.controller")
-const friendController = require("../controllers/friend.controller")
 const profileController = require("../controllers/profile.controller")
 const { connectDb } = require('../config/mongo.config');
 const constants = require('../utils/constants');
@@ -82,14 +81,14 @@ const onConnect = (io, socket) => {
         const userId = connectedUsers[socket.id];
         const friendId = body.userId;
 
-        var friends = await friendController.getFriends(userId);
+        var friends = await profileController.getFriendsData(userId);
         if (friends.includes(friendId)) {
             return;
         }
 
         if (friendRequests[friendId]) {
             if (friendRequests[friendId].includes(userId)) {
-                await friendController.createRelationship(userId, friendId);
+                await profileController.createRelationship(userId, friendId);
                 delete friendRequests[friendId];
 
                 var userProfile = await profileController.getProfileData(userId);
