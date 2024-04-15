@@ -23,7 +23,7 @@ const accountController = {
             return res.status(400).send(err.message);
         }
 
-        res.send("Password changed successfully!");
+        res.send("password-changed");
     }
 }
 

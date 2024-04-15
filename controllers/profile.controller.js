@@ -9,7 +9,7 @@ const profileController =
         const profile = await getProfileData(req.user._id);
 
         if (!profile) {
-            return res.status(404).send("Profile not found!");
+            return res.status(404).send("profile-not-found");
         }
         
         profile.photos = storage.getNewestPhotos(req.user._id);
@@ -27,7 +27,7 @@ const profileController =
         );
 
         if (!profile) {
-            return res.status(404).send("Profile not found!");
+            return res.status(404).send("profile-not-found");
         }
 
         profile.photos = storage.getNewestPhotos(req.user._id);
@@ -77,7 +77,7 @@ const validateProfileData = async (data) => {
         // if data[key] is not null and validators[key] exists
         if (data[key] && validators[key]) {
             if (!validators[key](data[key])) {
-                throw new Error(`Please enter valid ${key}!`);
+                throw new Error(`invalid-${key}!`);
             }
         }
     }

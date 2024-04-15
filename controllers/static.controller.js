@@ -7,7 +7,7 @@ const staticController = {
         const hobbies = await getHobbies();
 
         if (!hobbies) {
-            return res.status(404).send("Hobbies not found!");
+            return res.status(404).send("hobbies-not-found");
         }
 
         res.send(hobbies);

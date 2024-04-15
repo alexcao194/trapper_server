@@ -23,7 +23,7 @@ const socket = {
                 connectedUsers[user._id] = socket.id;
                 next();
             } catch (err) {
-                next(new Error("Authentication error"));
+                next(new Error("authentication-error"));
             }
         });
 

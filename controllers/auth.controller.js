@@ -77,7 +77,7 @@ const authController = {
     refreshToken: async (req, res) => {
         const refreshToken = req.headers["refresh_token"];
         if (!refreshToken) {
-            return res.status(403).send("Access is forbidden");
+            return res.status(403).send("access-denied");
         }
 
         try {
@@ -97,7 +97,7 @@ const authController = {
 const validateLoginData = async (data) => {
     // Pre-validate data
     if (!data) {
-        throw new Error("Please enter valid data!");
+        throw new Error("invalid-data");
     }
 
     const validators = {
@@ -108,7 +108,7 @@ const validateLoginData = async (data) => {
     for (let key in data) {
         if (validators[key]) {
             if (!data[key] || !validators[key](data[key])) {
-                throw new Error(`Please enter valid ${key}!`);
+                throw new Error(`invalid-${key}!`);
             }
         }
     }
@@ -121,11 +121,11 @@ const validateLoginData = async (data) => {
     );
 
     if (!user) {
-        throw new Error("Email or password is wrong!");
+        throw new Error("incorrect-email-or-password");
     }
 
     if (user && user.password !== data.password) {
-        throw new Error("Email or password is wrong!");
+        throw new Error("incorrect-email-or-password");
     }
 
     return user;
@@ -134,7 +134,7 @@ const validateLoginData = async (data) => {
 const validateRegistryData = async (data) => {
     // Pre-validate data
     if (!data) {
-        throw new Error("Please enter valid data!");
+        throw new Error("invalid-data");
     }
 
     const validators = {
@@ -147,13 +147,13 @@ const validateRegistryData = async (data) => {
     for (let key in data) {
         if (validators[key]) {
             if (!data[key] || !validators[key](data[key])) {
-                throw new Error(`Please enter valid ${key}!`);
+                throw new Error(`invalid-${key}!`);
             }
         }
     }
 
     if (await validateUtils.isEmailExists(data.email)) {
-        throw new Error("Email already exists!");
+        throw new Error("email-exists");
     }
 }
 
