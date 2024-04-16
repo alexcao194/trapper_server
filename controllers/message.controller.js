@@ -5,8 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const roomController = require('./room.controller');
 
 const messageController = {
-
-    createRoomMessage: async (roomId) => {
+    createRoomMessages: async (roomId) => {
         try {
             const { db, client } = await connectDb();
             const roomMessagesCollection = db.collection(constants.ROOM_MESSAGES);
@@ -17,8 +16,10 @@ const messageController = {
             };
 
             await roomMessagesCollection.insertOne(roomMessage);
+
+            return roomMessage;
         } catch (error) {
-            // TODO: return error to client
+            console.log(error.message);
         }
     },
 
@@ -29,12 +30,11 @@ const messageController = {
 
             const roomMessage = await roomMessagesCollection.findOne(
                 { _id: roomId },
-                { projection: { _id: 0 } }
             );
 
-            return roomMessage.list_messages;
+            return roomMessage;
         } catch (error) {
-            // TODO: return error to client
+            console.log(error.message);
         }
     },
 
@@ -64,19 +64,19 @@ const messageController = {
 
             // upload last message in RoomInfo
             await roomInfoCollection.updateOne(
-                {_id: roomId},
+                { _id: roomId },
                 { $set: { last_message: message } }
             );
 
             // report to client in room
-            const roomInfo = await roomController.getRoomInfoById(roomId);
+            const roomInfo = await roomController.findByRoomId(roomId);
             const members = roomInfo.list_members;
             for (let i = 0; i < members.length; i++) {
                 const memberSocketId = connectedUsers[members[i]];
-                if(memberSocketId) {
+                if (memberSocketId) {
                     io.to(memberSocketId).emit(eventKey.RECEIVED_MESSAGE, message);
                 }
-                
+
             }
 
         } catch (error) {
