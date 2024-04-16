@@ -60,7 +60,16 @@ const onConnect = (io, socket) => {
         const userId = connectedUsers[socket.id];
         const roomsInfo = await roomController.findByUserId(userId);
 
-        socket.emit(eventKey.RECEIVED_ROOMS_INFO, roomsInfo);
+        const result = [];
+
+        for (let roomInfo of roomsInfo) {
+            const partnerId = roomInfo.list_members.filter((member) => member !== userId)[0];
+            const partnerProfile = await profileController.getProfileData(partnerId);
+            roomInfo.profile = partnerProfile;
+            result.push(roomInfo);
+        }
+
+        socket.emit(eventKey.RECEIVED_ROOMS_INFO, result);
     });
 
     // Đăng kí sự kiện Fetch rooms messages
