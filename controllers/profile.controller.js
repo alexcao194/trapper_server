@@ -11,9 +11,6 @@ const profileController =
         if (!profile) {
             return res.status(404).send("profile-not-found");
         }
-        
-        profile.photos = storage.getNewestPhotos(req.user._id);
-        profile.photo_url = storage.getAvatar(req.user._id);
         res.send(profile);
     },
 
@@ -93,6 +90,9 @@ const profileController =
         if (!profile) {
             return null;
         }
+
+        profile.photos = storage.getNewestPhotos(_id);
+        profile.photo_url = storage.getAvatar(_id);
     
         return profile;
     },
