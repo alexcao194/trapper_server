@@ -58,7 +58,7 @@ const onConnect = (io, socket) => {
     // Đăng kí sự kiện Fetch rooms info
     socket.on(eventKey.FETCH_ROOMS_INFO, async () => {
         const userId = connectedUsers[socket.id];
-        const roomsInfo = await roomController.getRoomsInfoByUserId(userId);
+        const roomsInfo = await roomController.findByUserId(userId);
 
         socket.emit(eventKey.RECEIVED_ROOMS_INFO, roomsInfo);
     });
@@ -68,7 +68,7 @@ const onConnect = (io, socket) => {
         const userId = connectedUsers[socket.id];
         const partnerId = body.userId;
 
-        const roomInfo = await roomController.getRoomInfoByMembersId(userId, partnerId);
+        const roomInfo = await roomController.findWithMembers(userId, partnerId);
         if(roomInfo === null) {
             socket.emit(eventKey.RECEIVED_ROOMS_MESSAGES, {
                 error: "room-not-found"
