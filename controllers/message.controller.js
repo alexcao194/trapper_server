@@ -8,7 +8,7 @@ const messageController = {
     createRoomMessages: async (roomId) => {
         try {
             const { db, client } = await connectDb();
-            const roomMessagesCollection = db.collection(constants.ROOM_MESSAGES);
+            const roomMessagesCollection = db.collection(constants.ROOMS_MESSAGES);
 
             const roomMessage = {
                 _id: roomId,
@@ -26,7 +26,7 @@ const messageController = {
     getMessagesByRoom: async (roomId) => {
         try {
             const { db, client } = await connectDb();
-            const roomMessagesCollection = db.collection(constants.ROOM_MESSAGES);
+            const roomMessagesCollection = db.collection(constants.ROOMS_MESSAGES);
 
             const roomMessage = await roomMessagesCollection.findOne(
                 { _id: roomId },
@@ -41,7 +41,7 @@ const messageController = {
     sendMessage: async (io, connectedUsers, socket, body) => {
         try {
             const { db, client } = await connectDb();
-            const roomMessagesCollection = db.collection(constants.ROOM_MESSAGES);
+            const roomMessagesCollection = db.collection(constants.ROOMS_MESSAGES);
             const roomInfoCollection = db.collection(constants.ROOMS_INFO);
 
             // create message
@@ -55,11 +55,11 @@ const messageController = {
             };
 
             // update list messages
-            const listMessages = await messageController.getMessagesByRoom(roomId);
-            listMessages.push(message);
-            await roomMessagesCollection.updateOne(
+            const roomMessages = await messageController.getMessagesByRoom(roomId);
+            roomMessages.list_messages.push(message);
+            await roomMessagesCollection.replaceOne(
                 { _id: roomId },
-                { $set: { list_messages: listMessages } }
+                roomMessages
             );
 
             // upload last message in RoomInfo
@@ -82,6 +82,7 @@ const messageController = {
         } catch (error) {
             const message = "send-message-failed"
             socket.emit(eventKey.RECEIVED_MESSAGE, message);
+            console.log(error.message);
         }
     }
 }
