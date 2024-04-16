@@ -3,8 +3,7 @@ const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
 const storage = require('../storage/storage');
 
-const profileController =
-{
+const profileController = {
     getProfile: async (req, res) => {
         const profile = await profileController.getProfileData(req.user._id);
 

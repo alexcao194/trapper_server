@@ -1,4 +1,3 @@
-const jwtService = require("../jwt/jwt.service");
 const { connectDb } = require('../config/mongo.config');
 const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
@@ -11,7 +10,7 @@ const accountController = {
         const newPassword = req.body.password;
 
         try {
-            await validateUtils.validatePassword(newPassword);
+            validateUtils.validatePassword(newPassword);
 
             // Update password
             await usersCollection.updateOne(

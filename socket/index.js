@@ -224,6 +224,7 @@ const onConnect = (io, socket) => {
             console.log(roomInfo);
             if (!roomInfo) {
                 roomInfo = await roomController.createRoomInfo(userId, friendId);
+                await messageController.createRoomMessages(roomInfo._id);
                 console.log(roomInfo);
             }
             // remove 
@@ -249,6 +250,7 @@ const onConnect = (io, socket) => {
                 data: data
             });
         }
+        console.log(connectQueue);
     });
 
     socket.on(eventKey.ON_FIND_CANCEL, async () => {

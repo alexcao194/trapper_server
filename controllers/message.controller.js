@@ -1,8 +1,6 @@
 const { connectDb } = require('../config/mongo.config');
 const constants = require('../utils/constants');
-const eventKey = require('../socket/event');
 const { v4: uuidv4 } = require('uuid');
-const roomController = require('./room.controller');
 
 const messageController = {
     createRoomMessages: async (roomId) => {

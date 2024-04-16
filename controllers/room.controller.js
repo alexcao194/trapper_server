@@ -1,7 +1,5 @@
 const { connectDb } = require('../config/mongo.config');
 const constants = require('../utils/constants');
-const messageController = require('./message.controller');
-const eventKey = require('../socket/event');
 const { v4: uuidv4 } = require('uuid');
 
 const roomController = {
@@ -48,7 +46,6 @@ const roomController = {
 
             await roomInfoCollection.insertOne(roomInfo);
 
-            await messageController.createRoomMessages(roomInfo._id);
 
             return roomInfo;
         } catch (error) {

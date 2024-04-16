@@ -1,5 +1,4 @@
 const { connectDb } = require('../config/mongo.config');
-const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
 
 const staticController = {
