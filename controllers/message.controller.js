@@ -38,50 +38,36 @@ const messageController = {
         }
     },
 
-    sendMessage: async (io, connectedUsers, socket, body) => {
+    createMessage: async (room_id, content, type, userID) => {
         try {
             const { db, client } = await connectDb();
             const roomMessagesCollection = db.collection(constants.ROOMS_MESSAGES);
             const roomInfoCollection = db.collection(constants.ROOMS_INFO);
 
-            // create message
-            const { roomId, content, type } = body;
             const message = {
                 _id: uuidv4(),
                 content: content,
                 type: type,
                 timestamp: Date.now(),
-                sender: connectedUsers[socket.id]
+                sender: userID
             };
 
             // update list messages
-            const roomMessages = await messageController.getMessagesByRoom(roomId);
+            const roomMessages = await messageController.getMessagesByRoom(room_id);
             roomMessages.list_messages.push(message);
             await roomMessagesCollection.replaceOne(
-                { _id: roomId },
+                { _id: room_id },
                 roomMessages
             );
 
             // upload last message in RoomInfo
             await roomInfoCollection.updateOne(
-                { _id: roomId },
+                { _id: room_id },
                 { $set: { last_message: message } }
             );
 
-            // report to client in room
-            const roomInfo = await roomController.findByRoomId(roomId);
-            const members = roomInfo.list_members;
-            for (let i = 0; i < members.length; i++) {
-                const memberSocketId = connectedUsers[members[i]];
-                if (memberSocketId) {
-                    io.to(memberSocketId).emit(eventKey.RECEIVED_MESSAGE, message);
-                }
-
-            }
-
+            return message;
         } catch (error) {
-            const message = "send-message-failed"
-            socket.emit(eventKey.RECEIVED_MESSAGE, message);
             console.log(error.message);
         }
     }

@@ -3,25 +3,10 @@ const jwtService = require("../jwt/jwt.service");
 const messageController = require("../controllers/message.controller")
 const roomController = require("../controllers/room.controller")
 const profileController = require("../controllers/profile.controller")
-const { connectDb } = require('../config/mongo.config');
-const constants = require('../utils/constants');
 const eventKey = require('./event');
-const { v4: uuidv4 } = require("uuid");
 
 let connectedUsers = {};
 let friendRequests = {};
-// queue data:
-// {
-//     "userId": "userId",
-//     "age": 20,
-//     "gender": true,
-//     "data": {
-//        "max_age": 30,
-//        "min_age": 20,
-//        "hobbies": ["football", "music"],
-//        "gender": true
-// }
-// }
 let connectQueue = [];
 
 const socket = {
@@ -75,7 +60,7 @@ const onConnect = (io, socket) => {
     // Đăng kí sự kiện Fetch rooms messages
     socket.on(eventKey.FETCH_ROOMS_MESSAGES, async (body) => {
         
-        const roomId = body.roomId;
+        const roomId = body.room_id;
 
         const roomMessages = await messageController.getMessagesByRoom(roomId);
 
@@ -90,8 +75,40 @@ const onConnect = (io, socket) => {
     });
 
     // Đăng kí sự kiện Send message
-    socket.on(eventKey.SEND_MESSAGE, (body) => {
-        messageController.sendMessage(io, connectedUsers, socket, body);
+    socket.on(eventKey.SEND_MESSAGE, async (body) => {
+        try {
+            const room_id = body.room_id;
+            const content = body.content;
+            const type = body.type;
+            const message = await messageController.createMessage(body.room_id, content, type, connectedUsers[socket.id]);
+            const roomInfo = await roomController.findByRoomId(room_id);
+            const members = roomInfo.list_members;
+            for (let i = 0; i < members.length; i++) {
+                const memberSocketId = connectedUsers[members[i]];
+                if (memberSocketId) {
+                    io.to(memberSocketId).emit(eventKey.RECEIVED_MESSAGE, {
+                        room_id: room_id,
+                        message: message
+                    });
+                    const userId = connectedUsers[memberSocketId];
+                    const roomsInfo = await roomController.findByUserId(userId);
+                    const result = [];
+                    for (let roomInfo of roomsInfo) {
+                        const partnerId = roomInfo.list_members.filter((member) => member !== userId)[0];
+                        const partnerProfile = await profileController.getProfileData(partnerId);
+                        roomInfo.profile = partnerProfile;
+                        result.push(roomInfo);
+                    }
+                    io.to(memberSocketId).emit(eventKey.RECEIVED_ROOMS_INFO, result);
+                }
+
+            }
+
+        } catch (error) {
+            const message = "send-message-failed"
+            socket.emit(eventKey.RECEIVED_MESSAGE, message);
+            console.log(error.message);
+        }
     });
 
     // Đăng kí sự kiện Disconnection
