@@ -88,7 +88,6 @@ const profileController =
     
         const profile = await profilesCollection.findOne(
             { _id: _id },
-            { projection: { _id: 0 }}
         );
     
         if (!profile) {
