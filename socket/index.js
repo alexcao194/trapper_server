@@ -3,6 +3,7 @@ const jwtService = require("../jwt/jwt.service");
 const messageController = require("../controllers/message.controller")
 const roomController = require("../controllers/room.controller")
 const profileController = require("../controllers/profile.controller")
+const friendController = require("../controllers/friend.controller")
 const eventKey = require('./event');
 
 let connectedUsers = {};
@@ -44,13 +45,14 @@ const onConnect = (io, socket) => {
     socket.on(eventKey.FETCH_ROOMS_INFO, async () => {
         const userId = connectedUsers[socket.id];
         const roomsInfo = await roomController.findByUserId(userId);
-
+        const friends = await profileController.getFriendsData(userId);
         const result = [];
 
         for (let roomInfo of roomsInfo) {
             const partnerId = roomInfo.list_members.filter((member) => member !== userId)[0];
             const partnerProfile = await profileController.getProfileData(partnerId);
             roomInfo.profile = partnerProfile;
+            roomInfo.is_friend = friends.includes(partnerId);
             result.push(roomInfo);
         }
 
