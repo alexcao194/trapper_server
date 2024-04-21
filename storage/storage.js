@@ -3,7 +3,8 @@ const fs = require('fs')
 
 const storageAvatar = multer.diskStorage({
     destination: function(req, file, cb) {
-        const path = 'data/avatar'
+        const userId = req.user._id
+        const path = `data/avatar/${userId}`
         if (!fs.existsSync(path)) {
             fs.mkdirSync(path, { recursive: true })
         }
@@ -69,10 +70,9 @@ function getNewestPhotos(id) {
 
 function getAvatar(id) {
     var files = readAllFiles(id, 'data/avatar')
-    for (var i = 0; i < files.length; i++) {
-        if (files[i].includes(id)) {
-            return files[i]
-        }
+    // lastest file is avatar 
+    if (files.length > 0) {
+        return files[files.length - 1]
     }
     return null
 

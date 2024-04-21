@@ -92,7 +92,6 @@ const profileController = {
 
         profile.photos = storage.getNewestPhotos(_id);
         profile.photo_url = storage.getAvatar(_id);
-    
         return profile;
     },
 
