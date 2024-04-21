@@ -93,12 +93,14 @@ const onConnect = (io, socket) => {
                         message: message
                     });
                     const userId = connectedUsers[memberSocketId];
+                    const friends = await profileController.getFriendsData(userId);
                     const roomsInfo = await roomController.findByUserId(userId);
                     const result = [];
                     for (let roomInfo of roomsInfo) {
                         const partnerId = roomInfo.list_members.filter((member) => member !== userId)[0];
                         const partnerProfile = await profileController.getProfileData(partnerId);
                         roomInfo.profile = partnerProfile;
+                        roomInfo.is_friend = friends.includes(partnerId);
                         result.push(roomInfo);
                     }
                     io.to(memberSocketId).emit(eventKey.RECEIVED_ROOMS_INFO, result);
