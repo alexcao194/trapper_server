@@ -126,7 +126,7 @@ const onConnect = (io, socket) => {
     // friend request
     socket.on(eventKey.FRIEND_REQUEST, async (body) => {
         const userId = connectedUsers[socket.id];
-        const friendId = body.userId;
+        const friendId = body.user_id;
 
         var friends = await profileController.getFriendsData(userId);
         if (friends.includes(friendId)) {
