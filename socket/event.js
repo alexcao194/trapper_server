@@ -16,8 +16,8 @@ const CHAT_EVENT = Object.freeze({
     RECEIVED_FRIEND_REQUEST: 'on_received_friend_request',
     ACCEPT_FRIEND_REQUEST: 'on_accept_friend_request',
 
-    FRIEND_OFF : 'on_friend_off',
-    FRIEND_ON : 'on_friend_on',
+    FRIEND_OFFLINE : 'on_friend_offline',
+    FRIEND_ONLINE : 'on_friend_online',
 
     ON_FIND: 'on_find',
     ON_FOUND: 'on_found',

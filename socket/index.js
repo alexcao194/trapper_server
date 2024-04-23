@@ -23,7 +23,7 @@ const socket = {
                     token = socket.handshake.headers.access_token
                 }
                 const user = jwtService.verifyJWTToken(token);
-        
+
                 connectedUsers[socket.id] = user._id;
                 connectedUsers[user._id] = socket.id;
                 next();
@@ -62,7 +62,7 @@ const onConnect = (io, socket) => {
 
     // Đăng kí sự kiện Fetch rooms messages
     socket.on(eventKey.FETCH_ROOMS_MESSAGES, async (body) => {
-        
+
         const roomId = body.room_id;
 
         const roomMessages = await messageController.getMessagesByRoom(roomId);
@@ -121,11 +121,12 @@ const onConnect = (io, socket) => {
         const userId = connectedUsers[socket.id];
 
         try {
+            // notify before delete connectedUsers
+            notifyStateToFriends(io, socket, 0);
+
             delete socket.connectedUsers[socket.id];
             delete socket.connectedUsers[userId];
-
-            notifyStateToFriends(io, socket, 0);
-        } catch(e) {
+        } catch (e) {
 
         }
     });
@@ -191,15 +192,15 @@ const onConnect = (io, socket) => {
 
         var userMatchAgeAndGender = connectQueue.filter((item) => {
             var userAge = new Date().getFullYear() - userProfile.date_of_birth.split("/")[2];
-            var rs = item.age >= data.minAge 
-            && item.age <= data.maxAge
-            && item.gender == data.gender 
+            var rs = item.age >= data.minAge
+                && item.age <= data.maxAge
+                && item.gender == data.gender
 
-            && item.userId != userId
+                && item.userId != userId
 
-            && item.data.minAge <= userAge
-            && item.data.maxAge >= userAge
-            && item.data.gender == userProfile.gender
+                && item.data.minAge <= userAge
+                && item.data.maxAge >= userAge
+                && item.data.gender == userProfile.gender
             return rs
         });
 
@@ -219,7 +220,7 @@ const onConnect = (io, socket) => {
                 });
             }
         }
-        
+
         // if hobbies match > 0
         if (hobbiesMatch.length > 0) {
             hobbiesMatch.sort((a, b) => {
@@ -274,7 +275,7 @@ const onConnect = (io, socket) => {
 // state 0 => offline, 1 => online
 const notifyStateToFriends = async (io, socket, state) => {
     const userId = connectedUsers[socket.id];
-    const event = state ? eventKey.FRIEND_ON : eventKey.FRIEND_OFF;
+    const event = state ? eventKey.FRIEND_ONLINE : eventKey.FRIEND_OFFLINE;
 
     const friends = await profileController.getFriendsData(userId);
 
