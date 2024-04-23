@@ -38,16 +38,16 @@ const otpService = {
         try {
             // Config mail server
             const transporter = nodemailer.createTransport({
-                service: 'smtp-mail.outlook.com',
+                host: 'smtp-mail.outlook.com',
                 port: 587,
                 secure: false,
                 logger: true,
                 auth: {
-                    user: "norakyz.smtp@hotmail.com",
-                    pass: "Longkold123"
+                    user: 'norakyz.smtp@hotmail.com',
+                    pass: 'Longkold123'
                 }
             });
-
+            
             const mailOptions = {
                 from: "norakyz.smtp@hotmail.com",
                 to: email,
@@ -57,7 +57,7 @@ const otpService = {
             };
 
             await transporter.sendMail(mailOptions);
-
+            
         } catch (error) {
             throw new Error(error.message);
         }
