@@ -43,13 +43,13 @@ const otpService = {
                 secure: false,
                 logger: true,
                 auth: {
-                    user: process.env.AUTH_EMAIL,
-                    pass: process.env.AUTH_PASSWORD
+                    user: "norakyz.smtp@hotmail.com",
+                    pass: "Longkold123"
                 }
             });
 
             const mailOptions = {
-                from: process.env.AUTH_EMAIL,
+                from: "norakyz.smtp@hotmail.com",
                 to: email,
                 subject: 'Reset Your Password',
                 html: `<p> ${otp} is your OTP to reset your password. This OTP will expire in 5 minutes.</p>
@@ -57,7 +57,7 @@ const otpService = {
             };
 
             await transporter.sendMail(mailOptions);
-            
+
         } catch (error) {
             throw new Error(error.message);
         }
