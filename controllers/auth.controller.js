@@ -94,18 +94,25 @@ const authController = {
     },
 
     identifyEmail: async (req, res) => {
-        const email = req.body.email;
+        try {
+            const email = req.body.email;
 
-        if (validateUtils.validateEmail(email) === false) {
-            return res.status(401).send("invalid-data");
-        }
+            if (validateUtils.validateEmail(email) === false) {
+                return res.status(401).send("invalid-data");
+            }
 
-        if (validateUtils.isEmailExists(email) === false) {
-            console.log("fdsf");
-            return res.status(401).send("email-not-exists");
+            if (await validateUtils.isEmailExists(email) === false) {
+                return res.status(401).send("email-not-exists");
+            }
+
+            const otp = await otpService.generateOtp(email);
+
+            await otpService.sendOtp(email, otp);
+            
+            return res.status(200).send("email-found");
+        } catch (error) {
+            return res.status(401).send(error.message);
         }
-        
-        return res.status(200).send("email-found");
     },
 
     forgotPassword: async(req, res) => {
@@ -126,9 +133,9 @@ const authController = {
                 return res.status(200).send("password-changed");
             }
 
-            return res.status(200).send("otp-incorrect");
-        } catch (err) {
-            return res.status(401).send(err.message)
+            return res.status(200).send("otp-error");
+        } catch (error) {
+            return res.status(401).send(error.message)
         }
     }
 };
