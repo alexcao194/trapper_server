@@ -7,6 +7,7 @@ const { router } = require("./routes/index");
 const cors = require("cors");
 const { connectDb } = require("./config/mongo.config");
 const app = express();
+const dotenv = require("dotenv");
 
 // Kết nối tới CSDL ngay khi server khởi động
 connectDb().then(() => {
@@ -15,13 +16,14 @@ connectDb().then(() => {
   console.error("Failed to connect to MongoDB", err);
 });
 
+dotenv.config();
+
 app.use(logger("dev"));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use("/data", express.static(path.join(__dirname, "data")));
-
 
 
 app.use("/auth", router.authRouter);
