@@ -34,6 +34,7 @@ const socket = {
 
         io.on(eventKey.CONNECTION, (socket) => {
             onConnect(io, socket);
+            notifyStateToFriends(io, socket, 1);
         });
 
         return io;
@@ -122,6 +123,8 @@ const onConnect = (io, socket) => {
         try {
             delete socket.connectedUsers[socket.id];
             delete socket.connectedUsers[userId];
+
+            notifyStateToFriends(io, socket, 0);
         } catch(e) {
 
         }
@@ -266,6 +269,22 @@ const onConnect = (io, socket) => {
             }
         }
     });
+}
+
+// state 0 => offline, 1 => online
+const notifyStateToFriends = async (io, socket, state) => {
+    const userId = connectedUsers[socket.id];
+    const event = state ? eventKey.FRIEND_ON : eventKey.FRIEND_OFF;
+
+    const friends = await profileController.getFriendsData(userId);
+
+    for (let friendId of friends) {
+        if (connectedUsers[friendId]) {
+            io.to(connectedUsers[friendId]).emit(event, {
+                userId: userId
+            });
+        }
+    }
 }
 
 module.exports = socket;
