@@ -82,6 +82,14 @@ const validateUtils =
         }
 
         return false
+    },
+
+    validateOtp: (otp) => {
+        if (!otp) {
+            return false;
+        }
+
+        return validator.isNumeric(otp) && otp.length === 6;
     }
 }
 

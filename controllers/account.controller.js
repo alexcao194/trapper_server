@@ -23,7 +23,7 @@ const accountController = {
         }
 
         res.send("password-changed");
-    }
+    },
 }
 
 module.exports = accountController;

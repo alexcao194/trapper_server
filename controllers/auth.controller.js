@@ -3,7 +3,7 @@ const { connectDb } = require('../config/mongo.config');
 const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
 const { v4: uuidv4 } = require("uuid");
-
+const otpService = require("../utils/otp.service")
 
 
 const authController = {
@@ -91,6 +91,45 @@ const authController = {
 
     validate: async (req, res) => {
         res.send(req.user);
+    },
+
+    identifyEmail: async (req, res) => {
+        const email = req.body.email;
+
+        if (validateUtils.validateEmail(email) === false) {
+            return res.status(401).send("invalid-data");
+        }
+
+        if (validateUtils.isEmailExists(email) === false) {
+            console.log("fdsf");
+            return res.status(401).send("email-not-exists");
+        }
+        
+        return res.status(200).send("email-found");
+    },
+
+    forgotPassword: async(req, res) => {
+        try {
+            const forgotData = req.body;
+
+            await validateForgotData(forgotData);
+
+            if (await otpService.verifyOtp(forgotData.email, forgotData.otp)) {
+                const { db, client } = await connectDb();
+                const usersCollection = db.collection(constants.USERS);
+
+                await usersCollection.updateOne(
+                    { email: forgotData.email },
+                    { $set: { password: forgotData.newPassword } }
+                );
+
+                return res.status(200).send("password-changed");
+            }
+
+            return res.status(200).send("otp-incorrect");
+        } catch (err) {
+            return res.status(401).send(err.message)
+        }
     }
 };
 
@@ -154,6 +193,26 @@ const validateRegistryData = async (data) => {
 
     if (await validateUtils.isEmailExists(data.email)) {
         throw new Error("email-exists");
+    }
+}
+
+const validateForgotData = async (data) => {
+    if (!data) {
+        throw new Error("invalid-data");
+    }
+
+    const validators = {
+        email: validateUtils.validateEmail,
+        otp: validateUtils.validateOtp,
+        newPassword: validateUtils.validatePassword
+    };
+
+    for (let key in data) {
+        if (validators[key]) {
+            if (!data[key] || !validators[key](data[key])) {
+                throw new Error(`invalid-${key}!`);
+            }
+        }
     }
 }
 
