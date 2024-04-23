@@ -24,7 +24,7 @@ const otpService = {
             // create otp expire in 5 minutes
             await otpCollection.updateOne(
                 { email: email },
-                { $set: { otp: otp, createdAt: Date.now(), expiresAt: Date.now() + 1000 * 60 * 5 } },
+                { $set: { otp: otp.toString(), createdAt: Date.now(), expiresAt: Date.now() + 1000 * 60 * 5 } },
                 { upsert: true }
             );
 
@@ -41,7 +41,6 @@ const otpService = {
                 host: 'smtp-mail.outlook.com',
                 port: 587,
                 secure: false,
-                logger: true,
                 auth: {
                     user: 'norakyz.smtp@hotmail.com',
                     pass: 'Longkold123'
