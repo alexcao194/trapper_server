@@ -37,6 +37,11 @@ const profileController = {
             return res.send(profile);
         }
 
+        // Không cho user thay đổi email
+        if (newProfileData.email) {
+            newProfileData.email = null;
+        }
+
         try {
             await profileController.validateProfileData(newProfileData);
 
@@ -67,7 +72,7 @@ const profileController = {
             date_of_birth: validateUtils.validateDateOfBirth,
             photo_url: validateUtils.validateUrl
         };
-    
+
         for (let key in data) {
             // if data[key] is not null and validators[key] exists
             if (data[key] && validators[key]) {
@@ -81,11 +86,11 @@ const profileController = {
     getProfileData: async (_id) => {
         const { db, client } = await connectDb();
         const profilesCollection = db.collection(constants.PROFILES);
-    
+
         const profile = await profilesCollection.findOne(
             { _id: _id },
         );
-    
+
         if (!profile) {
             return null;
         }
@@ -118,7 +123,7 @@ const profileController = {
 
         // get all records that contain userId
         const friends = await friendsCollection.find({ members: userId }).toArray();
-        
+
         // return list of members that are not userId
         return friends.map(friend => {
             return friend.members.find(member => member !== userId);

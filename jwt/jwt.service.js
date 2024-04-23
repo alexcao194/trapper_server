@@ -9,7 +9,7 @@ const START_HEADER_AUTH = "Bearer ";
 
 const jwtService =
 {
-    getAccessToken: payload => {
+    getAccessToken: (payload) => {
         return jwt.sign({ user: payload }, jwtSecretString, { expiresIn: "150min" });
     },
 
