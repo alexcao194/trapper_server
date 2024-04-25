@@ -38,7 +38,7 @@ const storageProfile = multer.diskStorage({
 
 const storageImageMessage = multer.diskStorage({
     destination: function(req, file, cb) {
-        var id = req.room_id;
+        var room_id = req.room_id;
         const path = `data/message/${room_id}`;
         if (!fs.existsSync(path)) {
             fs.mkdirSync(path, { recursive: true })
@@ -46,7 +46,7 @@ const storageImageMessage = multer.diskStorage({
         cb(null, path)
     },
     filename: function(req, file, cb) {
-        var id = req.user_id;
+        var id = req.user._id;
         var extension = file.originalname.split('.').pop();
         var date = new Date();
         cb(null, `${id}-${date.getTime()}.${extension}`)
