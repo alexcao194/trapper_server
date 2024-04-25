@@ -29,6 +29,7 @@ app.use("/data", express.static(path.join(__dirname, "data")));
 app.use("/auth", router.authRouter);
 app.use("/profile", router.profileRouter);
 app.use("/account", router.accountRouter);
+app.use("/message", router.messageRouter);
 app.use("/", router.staticRouter);
 
 // catch 404 and forward to error handler

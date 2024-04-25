@@ -36,8 +36,27 @@ const storageProfile = multer.diskStorage({
     }
 })
 
+const storageImageMessage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        var id = req.room_id;
+        const path = `data/message/${room_id}`;
+        if (!fs.existsSync(path)) {
+            fs.mkdirSync(path, { recursive: true })
+        }
+        cb(null, path)
+    },
+    filename: function(req, file, cb) {
+        var id = req.user_id;
+        var extension = file.originalname.split('.').pop();
+        var date = new Date();
+        cb(null, `${id}-${date.getTime()}.${extension}`)
+    }
+})
+        
+
 const avatarUpload = multer({storage: storageAvatar, preservePath: true})
 const profileUpload = multer({storage: storageProfile, preservePath: true})
+const imageMessageUpload = multer({storage: storageImageMessage, preservePath: true})
 
 // read all files from data/profile/id 
 function readAllFiles(id, dir) {
@@ -81,6 +100,7 @@ function getAvatar(id) {
 const storage = {
     avatarUpload: avatarUpload,
     profileUpload: profileUpload,
+    imageMessageUpload: imageMessageUpload,
     readAllFiles: readAllFiles,
     getNewestPhotos: getNewestPhotos,
     getAvatar: getAvatar
