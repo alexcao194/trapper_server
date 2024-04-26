@@ -38,8 +38,7 @@ const storageProfile = multer.diskStorage({
 
 const storageImageMessage = multer.diskStorage({
     destination: function(req, file, cb) {
-        var room_id = req.room_id;
-        const path = `data/message/${room_id}`;
+        const path = `data/message/${file.originalname.split('.')[0]}`;
         if (!fs.existsSync(path)) {
             fs.mkdirSync(path, { recursive: true })
         }

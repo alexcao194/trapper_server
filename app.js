@@ -8,6 +8,8 @@ const cors = require("cors");
 const { connectDb } = require("./config/mongo.config");
 const app = express();
 const dotenv = require("dotenv");
+const bodyParser = require("body-parser");
+
 
 // Kết nối tới CSDL ngay khi server khởi động
 connectDb().then(() => {
@@ -18,6 +20,8 @@ connectDb().then(() => {
 
 dotenv.config();
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(logger("dev"));
 app.use(cors());
 app.use(express.json());
