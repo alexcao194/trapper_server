@@ -19,6 +19,7 @@ const socket = {
             try {
                 let token = socket.handshake.auth['access_token'];
                 // check what if auth is empty
+                console.log(token);
                 if (!token) {
                     token = socket.handshake.headers.access_token
                 }

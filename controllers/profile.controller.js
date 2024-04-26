@@ -6,7 +6,6 @@ const storage = require('../storage/storage');
 const profileController = {
     getProfile: async (req, res) => {
         const profile = await profileController.getProfileData(req.user._id);
-
         if (!profile) {
             return res.status(404).send("profile-not-found");
         }
@@ -86,7 +85,8 @@ const profileController = {
     getProfileData: async (_id) => {
         const { db, client } = await connectDb();
         const profilesCollection = db.collection(constants.PROFILES);
-
+        const hobbiesCollection = db.collection(constants.HOBBIES);
+        const hobbies = await hobbiesCollection.find().toArray();
         const profile = await profilesCollection.findOne(
             { _id: _id },
         );
@@ -97,6 +97,8 @@ const profileController = {
 
         profile.photos = storage.getNewestPhotos(_id);
         profile.photo_url = storage.getAvatar(_id);
+        profile.hobbies = hobbies.filter(hobby => profile.hobbies.includes(hobby.id));
+        
         return profile;
     },
 
