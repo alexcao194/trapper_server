@@ -16,7 +16,7 @@ const jwtMiddleware =
         try {
             user = jwtService.verifyJWTToken(token);
         } catch (error) {
-            return res.status(403).send(error.message);
+            return res.status(401).send(error.message);
         }
 
         req.user = user;
