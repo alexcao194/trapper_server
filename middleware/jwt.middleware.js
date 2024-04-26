@@ -8,7 +8,7 @@ const jwtMiddleware =
 
         // Check null or undefined
         if (!token) {
-            return res.status(403).send("Token is invalid");
+            return res.status(401).send("Token is invalid");
         }
 
         let user;
