@@ -60,9 +60,9 @@ const profileController = {
             return res.status(401).send(err.message);
         }
 
-        delete profile._id;
+        var newProfile = await profileController.getProfileData(req.user._id);
 
-        res.send(profile);
+        res.send(newProfile);
     },
 
     validateProfileData: async (data) => {
