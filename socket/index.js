@@ -243,13 +243,21 @@ const onConnect = (io, socket) => {
                     break;
                 }
             }
+
+            var isFriend = false;
+            var userFriends = await profileController.getFriendsData(userId);
+            if (userFriends.includes(friendId)) {
+                isFriend = true;
+            }
             io.to(connectedUsers[friendId]).emit(eventKey.ON_FOUND, {
                 profile: userProfile,
-                room_info: roomInfo
+                room_info: roomInfo,
+                is_friend: isFriend
             });
             socket.emit(eventKey.ON_FOUND, {
                 profile: friendProfile,
-                room_info: roomInfo
+                room_info: roomInfo,
+                is_friend: isFriend
             });
         } else {
             connectQueue.push({
