@@ -5,10 +5,11 @@ const roomController = require("../controllers/room.controller")
 const profileController = require("../controllers/profile.controller")
 const friendController = require("../controllers/friend.controller")
 const eventKey = require('./event');
+const data = require('./data');
 
-let connectedUsers = {};
-let friendRequests = {};
-let connectQueue = [];
+let connectedUsers = data.connectedUsers;
+let friendRequests = data.friendRequests;
+let connectQueue = data.connectQueue;
 
 const socket = {
     // Khởi tạo socket
@@ -329,4 +330,3 @@ const notifyStateToFriends = async (io, socket, state) => {
 }
 
 module.exports = socket;
-module.exports.connectedUsers = connectedUsers;
