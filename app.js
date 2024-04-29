@@ -17,7 +17,7 @@ function callApi() {
       console.log(res.data);
     });
   } catch (error) {
-    console.error(error);
+    console.log("something went wrong while ping the server");
   }
 }
 
