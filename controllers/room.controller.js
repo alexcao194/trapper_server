@@ -41,9 +41,8 @@ const roomController = {
             const roomInfo = {
                 _id: uuidv4(),
                 list_members: [userId1, userId2],
-                last_message: {
-                    timestamp: Date.now(),
-                }
+                last_message: null,
+                create_at: Date.now()
             };
 
             await roomInfoCollection.insertOne(roomInfo);
