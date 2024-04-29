@@ -249,11 +249,43 @@ const onConnect = (io, socket) => {
             if (userFriends.includes(friendId)) {
                 isFriend = true;
             }
+
+            const f_roomsInfo = await roomController.findByUserId(friendId);
+            const f_friends = await profileController.getFriendsData(friendId);
+            const f_result = [];
+
+            for (let roomInfo of f_roomsInfo) {
+                const partnerId = roomInfo.list_members.filter((member) => member !== friendId)[0];
+                const partnerProfile = await profileController.getProfileData(partnerId);
+                roomInfo.profile = partnerProfile;
+                roomInfo.is_friend = f_friends.includes(partnerId);
+                f_result.push(roomInfo);
+            }
+
+            io.to(connectedUsers[friendId]).emit(eventKey.RECEIVED_ROOMS_INFO, f_result);
+
             io.to(connectedUsers[friendId]).emit(eventKey.ON_FOUND, {
                 profile: userProfile,
                 room_info: roomInfo,
                 is_friend: isFriend
             });
+
+
+
+            const roomsInfo = await roomController.findByUserId(userId);
+            const friends = await profileController.getFriendsData(userId);
+            const result = [];
+
+            for (let roomInfo of roomsInfo) {
+                const partnerId = roomInfo.list_members.filter((member) => member !== userId)[0];
+                const partnerProfile = await profileController.getProfileData(partnerId);
+                roomInfo.profile = partnerProfile;
+                roomInfo.is_friend = friends.includes(partnerId);
+                result.push(roomInfo);
+            }
+
+            io.to(connectedUsers[userId]).emit(eventKey.RECEIVED_ROOMS_INFO, result);
+
             socket.emit(eventKey.ON_FOUND, {
                 profile: friendProfile,
                 room_info: roomInfo,
@@ -267,7 +299,6 @@ const onConnect = (io, socket) => {
                 data: data
             });
         }
-        console.log(connectQueue);
     });
 
     socket.on(eventKey.ON_FIND_CANCEL, async () => {
