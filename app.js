@@ -9,6 +9,19 @@ const { connectDb } = require("./config/mongo.config");
 const app = express();
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
+const axios = require("axios");
+
+function callApi() {
+  try {
+    axios.get("http://localhost:3000/api/v1/").then((res) => {
+      console.log(res.data);
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+setInterval(callApi, 1000);
 
 
 // Kết nối tới CSDL ngay khi server khởi động
