@@ -329,3 +329,4 @@ const notifyStateToFriends = async (io, socket, state) => {
 }
 
 module.exports = socket;
+module.exports.connectedUsers = connectedUsers;

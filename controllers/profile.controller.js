@@ -2,6 +2,7 @@ const { connectDb } = require('../config/mongo.config');
 const validateUtils = require('../utils/validator');
 const constants = require('../utils/constants');
 const storage = require('../storage/storage');
+const socket = require('../socket/index');
 
 const profileController = {
     getProfile: async (req, res) => {
@@ -113,7 +114,9 @@ const profileController = {
         const friends = await profileController.getFriendsData(userId);
         const profiles = [];
         for (let friendId of friends) {
-            const profile = await profileController.getProfileData(friendId);
+            var profile = await profileController.getProfileData(friendId);
+            // socket.connectedUsers contains friendId
+            profile.isOnline = socket.connectedUsers[friendId] ? true : false;
             profiles.push(profile);
         }
         res.send(profiles);
