@@ -11,9 +11,9 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const axios = require("axios");
 
-function callApi() {
+async function callApi() {
   try {
-    axios.get("https://trapper-active.onrender.com").then((res) => {
+    await axios.get("https://trapper-active.onrender.com").then((res) => {
       console.log(res.data);
     });
   } catch (error) {
@@ -21,7 +21,7 @@ function callApi() {
   }
 }
 
-setInterval(callApi, 10000);
+setInterval(callApi, 30000);
 
 
 // Kết nối tới CSDL ngay khi server khởi động
