@@ -9,8 +9,7 @@ const accountController = {
 
         const newPassword = req.body.newPassword;
         const oldPassword = req.body.oldPassword;
-        const email = req.user.email;
-
+        const email = req.body.email;
         const user = await usersCollection.findOne(
             { email: email }
         );
