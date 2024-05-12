@@ -12,7 +12,7 @@ const accountController = {
         const email = req.user.email;
 
         const user = await usersCollection.findOne(
-            { email: data.email }
+            { email: email }
         );
 
         if (!user) {
