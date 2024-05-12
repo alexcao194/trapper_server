@@ -7,7 +7,21 @@ const accountController = {
         const { db, client } = await connectDb();
         const usersCollection = db.collection(constants.USERS);
 
-        const newPassword = req.body.password;
+        const newPassword = req.body.newPassword;
+        const oldPassword = req.body.oldPassword;
+        const email = req.user.email;
+
+        const user = await usersCollection.findOne(
+            { email: data.email }
+        );
+
+        if (!user) {
+            return res.status(400).send("incorrect-email-or-password");
+        }
+
+        if (user && user.password !== oldPassword) {
+            return res.status(400).send("old-password-incorrect");
+        }
 
         try {
             validateUtils.validatePassword(newPassword);
